@@ -69,6 +69,7 @@ export async function drawBackground(
   const surface = await getBackground(toDraw.tier);
 
   context.drawImage(surface.background, 0, 0);
+  context.drawImage(surface.lowerTab, 23, 390);
   if (toDraw.thumbnail) {
     const thumb = `https://cdn.warframestat.us/img/${toDraw.thumbnail}`;
     context.drawImage(await loadImage(thumb), 10, 90, 239, 200);
@@ -110,6 +111,6 @@ export function drawText(
 
   if (compatName) {
     context.font = "10px Arial";
-    context.fillText(compatName, 125, 408);
+    context.fillText(compatName, 125, 404);
   }
 }
