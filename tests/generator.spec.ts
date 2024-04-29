@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import { describe, test } from "mocha";
 import * as path from "path";
+// @ts-ignore
 import { find } from "warframe-items/utilities";
 import { generateBasicMod, generateRivenMod } from "../src/generator.js";
 
@@ -15,6 +16,7 @@ describe("Generate a mod", () => {
     ];
 
     for (let i = 0; i < mods.length; i++) {
+      // @ts-ignore
       const mod = find.findItem(mods[i]);
       const isRiven = mod.name.includes("Riven");
       const modCanvas = isRiven

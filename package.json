@@ -4,12 +4,9 @@
   "description": "",
   "author": "SlayerOrnstein",
   "type": "module",
-  "exports": {
-    ".": "./src/generator.ts"
-  },
   "scripts": {
     "build": "tsc",
-    "test": "mocha"
+    "test": "mocha tests/*.spec.ts"
   },
   "license": "MIT",
   "dependencies": {
@@ -21,7 +18,12 @@
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.12.7",
     "chai": "^5.1.0",
+    "cross-env": "^7.0.3",
     "mocha": "^10.4.0",
+    "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
+  },
+  "mocha": {
+    "loader": "ts-node/esm"
   }
 }

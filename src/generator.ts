@@ -1,62 +1,48 @@
 import { createCanvas, loadImage } from "canvas";
 import { Mod, RivenMod } from "warframe-items";
+import { drawBackground, drawFrame, drawLegendaryFrame } from "./drawers.js";
 import {
-  drawImage,
-  drawLegendary,
-  drawNonLegendary,
-  DrawPart,
-  drawText,
-} from "./drawers.js";
-import { flip, getFrameParts, modRarityMap } from "./utils.js";
+  flip,
+  getBackground,
+  getFrame,
+  modDescription,
+  modRarityMap,
+} from "./utils.js";
+
+interface CanvasSize {
+  width: number;
+  height: number;
+}
 
 export async function generateBasicMod(
   mod: Mod,
-  level: number,
+  rank: number,
 ): Promise<Buffer> {
-  const canvas = createCanvas(256, 512);
+  const { width, height }: CanvasSize = { width: 256, height: 512 };
+  const canvas = createCanvas(width, height);
   const context = canvas.getContext("2d");
 
-  let rarity = modRarityMap[mod.rarity?.toLocaleLowerCase() ?? "common"];
-  if (mod.name.includes("Riven")) rarity = "Omega";
+  let tier = modRarityMap[mod.rarity?.toLocaleLowerCase() ?? "common"];
+  if (mod.name.includes("Riven")) tier = "Omega";
 
-  const parts = getFrameParts(rarity);
+  const background = await drawBackground(
+    {
+      tier,
+      thumbnail: mod.imageName,
+      name: mod.name,
+      description: modDescription(mod.description, mod.levelStats, rank) ?? "",
+      compatName: mod.compatName,
+    },
+    width,
+    height,
+  );
+  context.drawImage(await loadImage(background), 0, 0);
 
-  context.drawImage(await loadImage(parts.background), 0, 0);
-  if (mod.imageName) {
-    const thumb = await drawImage(
-      `https://cdn.warframestat.us/img/${mod.imageName}`,
-      239,
-      200,
-    );
-
-    context.drawImage(await loadImage(thumb), 10, 90);
+  let frame = await drawFrame(tier, width, height);
+  if (tier === "Legendary") {
+    frame = await drawLegendaryFrame(tier, width, height);
   }
-
-  context.drawImage(await loadImage(parts.top), 0, 70);
-  context.drawImage(await loadImage(parts.backer), 205, 95);
-
-  const drawParts: DrawPart = {
-    canvas,
-    context,
-    sideLights: parts.sideLights,
-    cornerLights: parts.cornerLights,
-    bottom: parts.bottom,
-  };
-
-  if (rarity === "Legendary") {
-    await drawLegendary(drawParts);
-  } else {
-    await drawNonLegendary(drawParts);
-  }
-
-  context.drawImage(await loadImage(parts.tab), 23, 390);
-
-  drawText({
-    context,
-    name: mod.name,
-    description: mod.levelStats![level].stats[0],
-    compatName: mod.compatName,
-  });
+  context.drawImage(await loadImage(frame), 0, 0);
 
   return canvas.toBuffer();
 }
@@ -64,32 +50,19 @@ export async function generateBasicMod(
 export async function generateRivenMod(riven: RivenMod): Promise<Buffer> {
   const canvas = createCanvas(282, 512);
   const context = canvas.getContext("2d")!;
-  const parts = getFrameParts(modRarityMap["riven"]);
+  const tier = modRarityMap["riven"];
 
   const magicCenter = 12;
 
-  context.drawImage(await loadImage(parts.background), magicCenter, 0);
-  context.drawImage(await loadImage(parts.backer), 205 + magicCenter, 95);
-  context.drawImage(await loadImage(parts.top), magicCenter - 10, 70);
-  context.drawImage(await loadImage(parts.sideLights), 249, 120);
+  const surface = await getBackground(tier);
+  context.drawImage(surface.background, magicCenter, 0);
+  if (riven.imageName) {
+    const thumb = `https://cdn.warframestat.us/img/${riven.imageName}`;
+    context.drawImage(await loadImage(thumb), 10 + magicCenter, 110, 239, 200);
+  }
 
-  let flipped = await flip(
-    await loadImage(parts.sideLights),
-    16 + magicCenter,
-    256,
-  );
-  context.drawImage(await loadImage(flipped), 2, 120);
-  context.drawImage(await loadImage(parts.bottom), 8 - magicCenter, 340);
-
-  context.drawImage(
-    await loadImage(parts.cornerLights),
-    205 + magicCenter,
-    380,
-  );
-
-  flipped = await flip(await loadImage(parts.cornerLights), 64, 64);
-  context.drawImage(await loadImage(flipped), 0, 380);
-  context.drawImage(await loadImage(parts.tab), 23 + magicCenter, 380);
+  context.drawImage(surface.backer, 205 + magicCenter, 95);
+  context.drawImage(surface.lowerTab, 23 + magicCenter, 380);
 
   const x = 125 + magicCenter;
   context.fillStyle = "white";
@@ -102,6 +75,18 @@ export async function generateRivenMod(riven: RivenMod): Promise<Buffer> {
     context.textAlign = "center";
     context.fillText(riven.compatName, 125 + magicCenter, 396);
   }
+
+  const frame = await getFrame(tier);
+  context.drawImage(frame.top, magicCenter - 10, 70);
+  context.drawImage(frame.sideLights, 249, 120);
+
+  let flipped = await flip(frame.sideLights, 16 + magicCenter, 256);
+  context.drawImage(await loadImage(flipped), 2, 120);
+  context.drawImage(frame.bottom, 8 - magicCenter, 340);
+
+  context.drawImage(frame.cornerLights, 205 + magicCenter, 380);
+  flipped = await flip(frame.cornerLights, 64, 64);
+  context.drawImage(await loadImage(flipped), 0, 380);
 
   return canvas.toBuffer();
 }
