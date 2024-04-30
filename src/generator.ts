@@ -2,7 +2,7 @@ import { createCanvas, loadImage } from 'canvas';
 import { Mod, RivenMod } from 'warframe-items';
 
 import { drawBackground, drawFrame, drawLegendaryFrame } from './drawers.js';
-import { flip, getBackground, getFrame, modDescription, modRarityMap } from './utils.js';
+import { flip, getBackground, getFrame, modRarityMap } from './utils.js';
 
 interface CanvasSize {
   width: number;
@@ -13,21 +13,9 @@ export const generateBasicMod = async (mod: Mod, rank: number): Promise<Buffer> 
   const { width, height }: CanvasSize = { width: 256, height: 512 };
   const canvas = createCanvas(width, height);
   const context = canvas.getContext('2d');
+  const tier = modRarityMap[mod.rarity?.toLocaleLowerCase() ?? 'common'];
 
-  let tier = modRarityMap[mod.rarity?.toLocaleLowerCase() ?? 'common'];
-  if (mod.name.includes('Riven')) tier = 'Omega';
-
-  const background = await drawBackground(
-    {
-      tier,
-      thumbnail: mod.imageName,
-      name: mod.name,
-      description: modDescription(mod.description, mod.levelStats, rank) ?? '',
-      compatName: mod.compatName,
-    },
-    width,
-    height
-  );
+  const background = await drawBackground(mod, width, height, rank);
   context.drawImage(await loadImage(background), 0, 0);
 
   let frame = await drawFrame(tier, width, height);
@@ -62,11 +50,7 @@ export const generateRivenMod = async (riven: RivenMod): Promise<Buffer> => {
   context.fillText(riven.name, x, 300);
   context.fillText(riven.description ?? '', x, 315);
 
-  if (riven.compatName) {
-    context.fillStyle = 'white';
-    context.textAlign = 'center';
-    context.fillText(riven.compatName, 125 + magicCenter, 396);
-  }
+  if (riven.compatName) context.fillText(riven.compatName, 125 + magicCenter, 396);
 
   const frame = await getFrame(tier);
   context.drawImage(frame.top, magicCenter - 10, 70);

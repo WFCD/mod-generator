@@ -1,6 +1,7 @@
 import { CanvasRenderingContext2D, createCanvas, loadImage } from 'canvas';
+import { Mod } from 'warframe-items';
 
-import { flip, getBackground, getFrame, wrapText } from './utils.js';
+import { flip, getBackground, getFrame, modDescription, modRarityMap, wrapText } from './utils.js';
 
 const drawCommonFrame = async (tier: string, width: number, height: number) => {
   const canvas = createCanvas(width, height);
@@ -81,20 +82,21 @@ export const drawText = (
   }
 };
 
-export const drawBackground = async (toDraw: DrawBackground, width: number, height: number): Promise<Buffer> => {
+export const drawBackground = async (mod: Mod, width: number, height: number, rank: number = 0): Promise<Buffer> => {
   const canvas = createCanvas(width, height);
   const context = canvas.getContext('2d');
-  const surface = await getBackground(toDraw.tier);
+  const tier = modRarityMap[mod.rarity?.toLocaleLowerCase() ?? 'common'];
+  const surface = await getBackground(tier);
 
   context.drawImage(surface.background, 0, 0);
   context.drawImage(surface.lowerTab, 23, 390);
-  if (toDraw.thumbnail) {
-    const thumb = `https://cdn.warframestat.us/img/${toDraw.thumbnail}`;
+  if (mod.imageName) {
+    const thumb = `https://cdn.warframestat.us/img/${mod.imageName}`;
     context.drawImage(await loadImage(thumb), 10, 90, 239, 200);
   }
 
   context.drawImage(surface.backer, 205, 95);
-  drawText(context, toDraw.name, toDraw.description, toDraw.compatName);
+  drawText(context, mod.name, modDescription(mod.description, mod.levelStats, rank), mod.compatName);
 
   return canvas.toBuffer();
 };

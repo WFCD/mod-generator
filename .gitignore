@@ -1,6 +1,6 @@
 .vscode/
 node_modules/
 .idea/
-assets/tests/
+assets/
 coverage/
 .eslintcache

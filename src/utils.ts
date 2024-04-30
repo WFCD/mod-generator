@@ -1,9 +1,10 @@
-import * as path from 'path';
+import { join } from 'path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 
 import { CanvasRenderingContext2D, createCanvas, Image, loadImage } from 'canvas';
 import { LevelStat } from 'warframe-items';
 
-const assetPath = path.join('.', 'assets', 'modFrames');
+const assetPath = join('.', 'assets', 'modFrames');
 
 type RarityType = {
   [key: string]: string;
@@ -35,12 +36,31 @@ export interface ModFrame {
   cornerLights: Image;
 }
 
+const downloadModPiece = async (name: string) => {
+  const base = 'https://cdn.warframestat.us/genesis/modFrames';
+  const image = await fetch(`${base}/${name}`);
+  const blob = await image.blob();
+
+  return Buffer.from(await blob.arrayBuffer());
+};
+
+const fetchImage = async (name: string) => {
+  if (existsSync(join(assetPath, name))) readFileSync(join(assetPath, name));
+
+  const image = await downloadModPiece(name);
+
+  if (!existsSync(assetPath)) mkdirSync(assetPath);
+  writeFileSync(join(assetPath, name), image);
+
+  return loadImage(image);
+};
+
 export const getFrame = async (tier: string): Promise<ModFrame> => {
   return {
-    cornerLights: await loadImage(path.join(assetPath, `${tier}CornerLights.png`)),
-    bottom: await loadImage(path.join(assetPath, `${tier}FrameBottom.png`)),
-    top: await loadImage(path.join(assetPath, `${tier}FrameTop.png`)),
-    sideLights: await loadImage(path.join(assetPath, `${tier}SideLight.png`)),
+    cornerLights: await fetchImage(`${tier}CornerLights.png`),
+    bottom: await fetchImage(`${tier}FrameBottom.png`),
+    top: await fetchImage(`${tier}FrameTop.png`),
+    sideLights: await fetchImage(`${tier}SideLight.png`),
   };
 };
 
@@ -55,20 +75,16 @@ export interface ModBackground {
 export const getBackground = async (tier: string): Promise<ModBackground> => {
   const isRiven = tier === 'Omega';
 
-  const background = isRiven
-    ? path.join(assetPath, 'LegendaryBackground.png')
-    : path.join(assetPath, `${tier}Background.png`);
+  const background = isRiven ? 'LegendaryBackground.png' : `${tier}Background.png`;
 
-  const backer = isRiven
-    ? path.join(assetPath, 'RivenTopRightBacker.png')
-    : path.join(assetPath, `${tier}TopRightBacker.png`);
+  const backer = isRiven ? 'RivenTopRightBacker.png' : `${tier}TopRightBacker.png`;
 
-  const lowerTab = isRiven ? path.join(assetPath, 'RivenLowerTab.png') : path.join(assetPath, `${tier}LowerTab.png`);
+  const lowerTab = isRiven ? 'RivenLowerTab.png' : `${tier}LowerTab.png`;
 
   return {
-    background: await loadImage(background),
-    backer: await loadImage(backer),
-    lowerTab: await loadImage(lowerTab),
+    background: await fetchImage(background),
+    backer: await fetchImage(backer),
+    lowerTab: await fetchImage(lowerTab),
   };
 };
 
