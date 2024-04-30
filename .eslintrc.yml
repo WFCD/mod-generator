@@ -1,0 +1,9 @@
+extends: "@wfcd/eslint-config/typescript"
+parser: "@typescript-eslint/parser"
+parserOptions:
+  project: "."
+  babelOptions:
+    plugins:
+      - "@typescript-eslint/eslint-plugin"
+      - "@babel/plugin-transform-class-properties"
+      - "@babel/plugin-transform-private-methods"

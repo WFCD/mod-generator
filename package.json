@@ -10,18 +10,22 @@
     "lint": "eslint src/",
     "lint:fix": "eslint src/ tests/ --fix",
     "test": "c8 mocha tests/*.spec.ts",
-    "prepare": "husky && if [ \"$NODE_ENV\" = \"dev\" ] ; then npx -p install-peerdeps@latest install-peerdeps @wfcd/eslint-config@latest -S ; fi"
+    "prepare": "husky && npx install-peerdeps -S @wfcd/eslint-config@latest"
   },
   "license": "MIT",
   "dependencies": {
     "canvas": "^2.11.2",
-    "warframe-items": "^1.1262.45"
+    "warframe-items": "^1.1262.30"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2",
+    "@commitlint/types": "^19.0.3",
     "@types/chai": "^4.3.14",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.12.7",
-    "@wfcd/eslint-config": "^1.6.1",
+    "@wfcd/eslint-config": "^1.6.3",
+    "c8": "^9.1.0",
     "chai": "^5.1.0",
     "coveralls": "^3.1.1",
     "cross-env": "^7.0.3",
@@ -35,20 +39,6 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "eslintConfig": {
-    "extends": "@wfcd/eslint-config/typescript",
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-      "project": ".",
-      "babelOptions": {
-        "plugins": [
-          "@typescript-eslint/eslint-plugin",
-          "@babel/plugin-transform-class-properties",
-          "@babel/plugin-transform-private-methods"
-        ]
-      }
-    }
-  },
   "babel": {
     "presets": [
       "@babel/preset-env"
@@ -60,7 +50,8 @@
   },
   "prettier": "@wfcd/eslint-config/prettier",
   "mocha": {
-    "loader": "ts-node/esm"
+    "loader": "ts-node/esm",
+    "timeout": 10000
   },
   "c8": {
     "reporter": [
@@ -71,15 +62,5 @@
   },
   "peerDependencies": {
     "warframe-items": "^1.1262.30"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "eslint --cache --fix",
-      "npm test"
-    ],
-    "package*.json": [
-      "prettier --write",
-      "npm -q --no-progress dedupe"
-    ]
   }
 }
