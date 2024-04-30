@@ -31,7 +31,6 @@ export async function flip(
 
   context.translate(width, 0);
   context.scale(-1, 1);
-  // @ts-ignore
   context.drawImage(frame, 0, 0);
 
   return canvas.toBuffer();

@@ -1,9 +1,10 @@
-import * as fs from "fs";
+import { writeFileSync, readdirSync } from "node:fs";
 import { describe, test } from "mocha";
-import * as path from "path";
-// @ts-ignore
+import { join } from "node:path";
+import { RivenMod, Mod } from "warframe-items";
 import { find } from "warframe-items/utilities";
 import { generateBasicMod, generateRivenMod } from "../src/generator.js";
+import * as assert from "node:assert";
 
 describe("Generate a mod", () => {
   test("run test", async () => {
@@ -16,18 +17,20 @@ describe("Generate a mod", () => {
     ];
 
     for (let i = 0; i < mods.length; i++) {
-      // @ts-ignore
       const mod = find.findItem(mods[i]);
-      const isRiven = mod.name.includes("Riven");
+      if (!mod) continue;
+      const isRiven = mod.name?.includes("Riven");
       const modCanvas = isRiven
-        ? await generateRivenMod(mod)
-        : await generateBasicMod(mod, 1);
+        ? await generateRivenMod(mod as RivenMod)
+        : await generateBasicMod(mod as Mod, 1);
       if (!modCanvas) console.log("failed");
 
-      fs.writeFileSync(
-        path.join(".", "assets", `${mod.name}.png`),
+      writeFileSync(
+        join(".", "assets/tests", `${mod.name}.png`),
         modCanvas,
       );
     }
+    const testFiles = readdirSync(join(".", "assets/tests"));
+    assert.equal(testFiles.length, mods.length);
   });
 });

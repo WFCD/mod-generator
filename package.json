@@ -12,7 +12,7 @@
   "license": "MIT",
   "dependencies": {
     "canvas": "^2.11.2",
-    "warframe-items": "^1.1262.44"
+    "warframe-items": "^1.1262.45"
   },
   "devDependencies": {
     "@types/chai": "^4.3.14",

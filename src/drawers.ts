@@ -1,11 +1,7 @@
 import { CanvasRenderingContext2D, createCanvas, loadImage } from "canvas";
 import { flip, getBackground, getFrame, wrapText } from "./utils.js";
 
-export async function drawLegendaryFrame(
-  tier: string,
-  width: number,
-  height: number,
-): Promise<Buffer> {
+const drawCommonFrame = async (tier: string, width: number, height: number) => {
   const canvas = createCanvas(width, height);
   const context = canvas.getContext("2d");
   const frame = await getFrame(tier);
@@ -17,10 +13,19 @@ export async function drawLegendaryFrame(
   context.drawImage(frame.sideLights, 238, 120);
   let flipped = await flip(frame.sideLights, 16, 256);
   context.drawImage(await loadImage(flipped), 2, 120);
+  return { context, frame, canvas };
+};
+
+export async function drawLegendaryFrame(
+  tier: string,
+  width: number,
+  height: number,
+): Promise<Buffer> {
+  const { context, frame, canvas } = await drawCommonFrame(tier, width, height);
 
   // corner lights
   context.drawImage(frame.cornerLights, 200, 380);
-  flipped = await flip(frame.cornerLights, 64, 64);
+  const flipped = await flip(frame.cornerLights, 64, 64);
   context.drawImage(await loadImage(flipped), -5, 380);
 
   return canvas.toBuffer();
@@ -31,21 +36,11 @@ export async function drawFrame(
   width: number,
   height: number,
 ): Promise<Buffer> {
-  const canvas = createCanvas(width, height);
-  const context = canvas.getContext("2d");
-  const frame = await getFrame(tier);
-
-  context.drawImage(frame.top, 0, 70);
-  context.drawImage(frame.bottom, 0, 340);
-
-  // side lights
-  context.drawImage(frame.sideLights, 238, 120);
-  let flipped = await flip(frame.sideLights, 16, 256);
-  context.drawImage(await loadImage(flipped), 2, 120);
+  const { context, frame, canvas } = await drawCommonFrame(tier, width, height);
 
   // corner lights
   context.drawImage(frame.cornerLights, 200, 375);
-  flipped = await flip(frame.cornerLights, 16, 256);
+  const flipped = await flip(frame.cornerLights, 16, 256);
   context.drawImage(await loadImage(flipped), -5, 375);
 
   return canvas.toBuffer();
