@@ -1,5 +1,6 @@
 import { createCanvas, loadImage } from 'canvas';
 import { Mod, RivenMod } from 'warframe-items';
+
 import { drawBackground, drawFrame, drawLegendaryFrame } from './drawers.js';
 import { flip, getBackground, getFrame, modDescription, modRarityMap } from './utils.js';
 
@@ -40,8 +41,8 @@ export const generateBasicMod = async (mod: Mod, rank: number): Promise<Buffer> 
 
 export const generateRivenMod = async (riven: RivenMod): Promise<Buffer> => {
   const canvas = createCanvas(282, 512);
-  const context = canvas.getContext('2d')!;
-  const tier = modRarityMap['riven'];
+  const context = canvas.getContext('2d');
+  const tier = modRarityMap.riven;
 
   const magicCenter = 12;
 
@@ -71,12 +72,12 @@ export const generateRivenMod = async (riven: RivenMod): Promise<Buffer> => {
   context.drawImage(frame.top, magicCenter - 10, 70);
   context.drawImage(frame.sideLights, 249, 120);
 
-  let flipped = await flip(frame.sideLights, 16 + magicCenter, 256);
+  let flipped = flip(frame.sideLights, 16 + magicCenter, 256);
   context.drawImage(await loadImage(flipped), 2, 120);
   context.drawImage(frame.bottom, 8 - magicCenter, 340);
 
   context.drawImage(frame.cornerLights, 205 + magicCenter, 380);
-  flipped = await flip(frame.cornerLights, 64, 64);
+  flipped = flip(frame.cornerLights, 64, 64);
   context.drawImage(await loadImage(flipped), 0, 380);
 
   return canvas.toBuffer();

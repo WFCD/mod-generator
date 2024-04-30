@@ -1,5 +1,6 @@
-import { CanvasRenderingContext2D, createCanvas, Image, loadImage } from 'canvas';
 import * as path from 'path';
+
+import { CanvasRenderingContext2D, createCanvas, Image, loadImage } from 'canvas';
 import { LevelStat } from 'warframe-items';
 
 const assetPath = path.join('.', 'assets', 'modFrames');
@@ -16,9 +17,9 @@ export const modRarityMap: RarityType = {
   riven: 'Omega',
 };
 
-export const flip = async (frame: Image, width: number, height: number): Promise<Buffer> => {
+export const flip = (frame: Image, width: number, height: number): Buffer => {
   const canvas = createCanvas(width, height);
-  const context = canvas.getContext('2d')!;
+  const context = canvas.getContext('2d');
 
   context.translate(width, 0);
   context.scale(-1, 1);
@@ -55,11 +56,11 @@ export const getBackground = async (tier: string): Promise<ModBackground> => {
   const isRiven = tier === 'Omega';
 
   const background = isRiven
-    ? path.join(assetPath, `LegendaryBackground.png`)
+    ? path.join(assetPath, 'LegendaryBackground.png')
     : path.join(assetPath, `${tier}Background.png`);
 
   const backer = isRiven
-    ? path.join(assetPath, `RivenTopRightBacker.png`)
+    ? path.join(assetPath, 'RivenTopRightBacker.png')
     : path.join(assetPath, `${tier}TopRightBacker.png`);
 
   const lowerTab = isRiven ? path.join(assetPath, 'RivenLowerTab.png') : path.join(assetPath, `${tier}LowerTab.png`);
@@ -79,10 +80,10 @@ export const modDescription = (
   if (description && description.length !== 0) return description;
 
   if (levelStats) {
-    const stats = levelStats[rank].stats;
+    const { stats } = levelStats[rank];
 
     let desc = '';
-    for (let i = 0; i < stats.length; i++) {
+    for (let i = 0; i < stats.length; i += 1) {
       desc = desc.concat(`${stats[i]} \n`);
     }
 
@@ -95,8 +96,8 @@ export const wrapText = (context: CanvasRenderingContext2D, text: string, maxWid
   let currentLine = '';
   const lines = [];
 
-  for (const word of words) {
-    const testLine = currentLine + ' ' + word;
+  words.forEach((word) => {
+    const testLine = `${currentLine} ${word}`;
     const testLineWidth = context.measureText(testLine).width;
 
     if (testLineWidth > maxWidth) {
@@ -105,7 +106,7 @@ export const wrapText = (context: CanvasRenderingContext2D, text: string, maxWid
     } else {
       currentLine = testLine;
     }
-  }
+  });
 
   lines.push(currentLine);
   return lines;
