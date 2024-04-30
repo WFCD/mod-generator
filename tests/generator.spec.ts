@@ -19,7 +19,7 @@ describe('Generate a mod', () => {
     ];
 
     const testPath = join('.', 'assets', 'tests');
-    if (!existsSync(testPath)) mkdirSync(testPath);
+    if (!existsSync(testPath)) mkdirSync(testPath, { recursive: true });
 
     for (let i = 0; i < mods.length; i += 1) {
       const mod = find.findItem(mods[i]);
