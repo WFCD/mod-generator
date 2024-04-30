@@ -5,7 +5,7 @@ export default {
     () => "tsc -p tsconfig.json --noEmit",
     () => "npm test"
   ],
-  "*.{json,yaml,yml,md},!package*.json": [
+  "**/*.{json,yaml,yml,md},!package*.json": [
     "prettier --write"
   ],
   "package*.json": [
