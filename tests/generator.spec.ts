@@ -1,9 +1,9 @@
-import { writeFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
 import * as assert from 'node:assert';
+import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 import { describe, test } from 'mocha';
-import { RivenMod, Mod } from 'warframe-items';
+import { Mod, RivenMod } from 'warframe-items';
 import { find } from 'warframe-items/utilities';
 
 import { generateBasicMod, generateRivenMod } from '../src/generator.js';
@@ -18,6 +18,9 @@ describe('Generate a mod', () => {
       '/Lotus/Upgrades/Mods/Randomized/LotusArchgunRandomModRare',
     ];
 
+    const testPath = join('.', 'assets', 'tests');
+    if (!existsSync(testPath)) mkdirSync(testPath);
+
     for (let i = 0; i < mods.length; i += 1) {
       const mod = find.findItem(mods[i]);
       if (!mod) continue;
@@ -25,7 +28,7 @@ describe('Generate a mod', () => {
       const modCanvas = isRiven ? await generateRivenMod(mod as RivenMod) : await generateBasicMod(mod as Mod, 1);
       if (!modCanvas) assert.equal(true, false, 'Failed to generate mod');
 
-      writeFileSync(join('.', 'assets/tests', `${mod.name}.png`), modCanvas);
+      writeFileSync(join('.', 'assets', 'tests', `${mod.name}.png`), modCanvas);
     }
     const testFiles = readdirSync(join('.', 'assets/tests'));
     assert.equal(testFiles.length, mods.length);
