@@ -1,5 +1,5 @@
-import { join } from 'path';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
 
 import { CanvasRenderingContext2D, createCanvas, Image, loadImage } from 'canvas';
 import { LevelStat } from 'warframe-items';
@@ -49,7 +49,7 @@ const fetchImage = async (name: string) => {
 
   const image = await downloadModPiece(name);
 
-  if (!existsSync(assetPath)) mkdirSync(assetPath);
+  if (!existsSync(assetPath)) mkdirSync(assetPath, { recursive: true });
   writeFileSync(join(assetPath, name), image);
 
   return loadImage(image);
