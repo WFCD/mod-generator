@@ -1,9 +1,9 @@
-import { CanvasRenderingContext2D, createCanvas, loadImage } from "canvas";
-import { flip, getBackground, getFrame, wrapText } from "./utils.js";
+import { CanvasRenderingContext2D, createCanvas, loadImage } from 'canvas';
+import { flip, getBackground, getFrame, wrapText } from './utils.js';
 
 const drawCommonFrame = async (tier: string, width: number, height: number) => {
   const canvas = createCanvas(width, height);
-  const context = canvas.getContext("2d");
+  const context = canvas.getContext('2d');
   const frame = await getFrame(tier);
 
   context.drawImage(frame.top, 0, 70);
@@ -16,11 +16,7 @@ const drawCommonFrame = async (tier: string, width: number, height: number) => {
   return { context, frame, canvas };
 };
 
-export async function drawLegendaryFrame(
-  tier: string,
-  width: number,
-  height: number,
-): Promise<Buffer> {
+export const drawLegendaryFrame = async (tier: string, width: number, height: number): Promise<Buffer> => {
   const { context, frame, canvas } = await drawCommonFrame(tier, width, height);
 
   // corner lights
@@ -29,13 +25,9 @@ export async function drawLegendaryFrame(
   context.drawImage(await loadImage(flipped), -5, 380);
 
   return canvas.toBuffer();
-}
+};
 
-export async function drawFrame(
-  tier: string,
-  width: number,
-  height: number,
-): Promise<Buffer> {
+export const drawFrame = async (tier: string, width: number, height: number): Promise<Buffer> => {
   const { context, frame, canvas } = await drawCommonFrame(tier, width, height);
 
   // corner lights
@@ -44,7 +36,7 @@ export async function drawFrame(
   context.drawImage(await loadImage(flipped), -5, 375);
 
   return canvas.toBuffer();
-}
+};
 
 export interface DrawBackground {
   tier: string;
@@ -54,13 +46,9 @@ export interface DrawBackground {
   compatName: string | undefined;
 }
 
-export async function drawBackground(
-  toDraw: DrawBackground,
-  width: number,
-  height: number,
-): Promise<Buffer> {
+export const drawBackground = async (toDraw: DrawBackground, width: number, height: number): Promise<Buffer> => {
   const canvas = createCanvas(width, height);
-  const context = canvas.getContext("2d");
+  const context = canvas.getContext('2d');
   const surface = await getBackground(toDraw.tier);
 
   context.drawImage(surface.background, 0, 0);
@@ -74,26 +62,26 @@ export async function drawBackground(
   drawText(context, toDraw.name, toDraw.description, toDraw.compatName);
 
   return canvas.toBuffer();
-}
+};
 
-export function drawText(
+export const drawText = (
   context: CanvasRenderingContext2D,
   name: string,
   description: string | undefined,
-  compatName: string | undefined,
-) {
+  compatName: string | undefined
+) => {
   const x = 125;
 
-  context.fillStyle = "white";
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  context.font = "bold 20px Arial";
+  context.fillStyle = 'white';
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.font = 'bold 20px Arial';
   context.fillText(name, x, 315);
 
-  context.font = "12px Arial";
+  context.font = '12px Arial';
   if (description) {
     let start = 335;
-    let lines = description.split("\n");
+    let lines = description.split('\n');
 
     for (const line of lines) {
       const texts = wrapText(context, line, 230);
@@ -105,7 +93,7 @@ export function drawText(
   }
 
   if (compatName) {
-    context.font = "10px Arial";
+    context.font = '10px Arial';
     context.fillText(compatName, 125, 404);
   }
-}
+};

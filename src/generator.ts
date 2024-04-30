@@ -1,56 +1,47 @@
-import { createCanvas, loadImage } from "canvas";
-import { Mod, RivenMod } from "warframe-items";
-import { drawBackground, drawFrame, drawLegendaryFrame } from "./drawers.js";
-import {
-  flip,
-  getBackground,
-  getFrame,
-  modDescription,
-  modRarityMap,
-} from "./utils.js";
+import { createCanvas, loadImage } from 'canvas';
+import { Mod, RivenMod } from 'warframe-items';
+import { drawBackground, drawFrame, drawLegendaryFrame } from './drawers.js';
+import { flip, getBackground, getFrame, modDescription, modRarityMap } from './utils.js';
 
 interface CanvasSize {
   width: number;
   height: number;
 }
 
-export async function generateBasicMod(
-  mod: Mod,
-  rank: number,
-): Promise<Buffer> {
+export const generateBasicMod = async (mod: Mod, rank: number): Promise<Buffer> => {
   const { width, height }: CanvasSize = { width: 256, height: 512 };
   const canvas = createCanvas(width, height);
-  const context = canvas.getContext("2d");
+  const context = canvas.getContext('2d');
 
-  let tier = modRarityMap[mod.rarity?.toLocaleLowerCase() ?? "common"];
-  if (mod.name.includes("Riven")) tier = "Omega";
+  let tier = modRarityMap[mod.rarity?.toLocaleLowerCase() ?? 'common'];
+  if (mod.name.includes('Riven')) tier = 'Omega';
 
   const background = await drawBackground(
     {
       tier,
       thumbnail: mod.imageName,
       name: mod.name,
-      description: modDescription(mod.description, mod.levelStats, rank) ?? "",
+      description: modDescription(mod.description, mod.levelStats, rank) ?? '',
       compatName: mod.compatName,
     },
     width,
-    height,
+    height
   );
   context.drawImage(await loadImage(background), 0, 0);
 
   let frame = await drawFrame(tier, width, height);
-  if (tier === "Legendary") {
+  if (tier === 'Legendary') {
     frame = await drawLegendaryFrame(tier, width, height);
   }
   context.drawImage(await loadImage(frame), 0, 0);
 
   return canvas.toBuffer();
-}
+};
 
-export async function generateRivenMod(riven: RivenMod): Promise<Buffer> {
+export const generateRivenMod = async (riven: RivenMod): Promise<Buffer> => {
   const canvas = createCanvas(282, 512);
-  const context = canvas.getContext("2d")!;
-  const tier = modRarityMap["riven"];
+  const context = canvas.getContext('2d')!;
+  const tier = modRarityMap['riven'];
 
   const magicCenter = 12;
 
@@ -65,14 +56,14 @@ export async function generateRivenMod(riven: RivenMod): Promise<Buffer> {
   context.drawImage(surface.lowerTab, 23 + magicCenter, 380);
 
   const x = 125 + magicCenter;
-  context.fillStyle = "white";
-  context.textAlign = "center";
+  context.fillStyle = 'white';
+  context.textAlign = 'center';
   context.fillText(riven.name, x, 300);
-  context.fillText(riven.description ?? "", x, 315);
+  context.fillText(riven.description ?? '', x, 315);
 
   if (riven.compatName) {
-    context.fillStyle = "white";
-    context.textAlign = "center";
+    context.fillStyle = 'white';
+    context.textAlign = 'center';
     context.fillText(riven.compatName, 125 + magicCenter, 396);
   }
 
@@ -89,4 +80,4 @@ export async function generateRivenMod(riven: RivenMod): Promise<Buffer> {
   context.drawImage(await loadImage(flipped), 0, 380);
 
   return canvas.toBuffer();
-}
+};
