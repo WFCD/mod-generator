@@ -1,7 +1,8 @@
 import * as assert from 'node:assert';
-import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { isMatch } from 'equate';
 import { describe, test } from 'mocha';
 import { Mod, RivenMod } from 'warframe-items';
 import { find } from 'warframe-items/utilities';
@@ -29,6 +30,19 @@ describe('Generate a mod', () => {
       if (!modCanvas) assert.equal(true, false, 'Failed to generate mod');
 
       writeFileSync(join('.', 'assets', 'tests', `${mod.name}.png`), modCanvas);
+
+      const result = await isMatch(modCanvas, readFileSync(join('.', 'assets', 'test_assets', `${mod.name}.png`)), {
+        tolerancePercent: 0,
+        diffOutputFormat: 'png',
+      });
+
+      if (!result) assert.equal(true, false, 'Failed to compare images');
+      const pngBuffer = result.imageDiffData;
+
+      if (!result.didMatch && pngBuffer !== undefined)
+        writeFileSync(join('.', 'assets', 'tests', `${mod.name}_diff.png`), pngBuffer);
+      assert.equal(pngBuffer!.readUInt8(0), 0x89);
+      assert.equal(result.didMatch, true);
     }
     const testFiles = readdirSync(join('.', 'assets/tests'));
     assert.equal(testFiles.length, mods.length);
