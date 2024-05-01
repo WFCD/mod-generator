@@ -69,7 +69,7 @@ export const drawText = (
     const lines = description.split('\n');
 
     lines.forEach((line) => {
-      const texts = wrapText(context, line, 230);
+      const texts = wrapText(context, line, 207);
       texts.forEach((text) => {
         context.fillText(text, x, start);
         start += 15;
