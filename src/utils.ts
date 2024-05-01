@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
-import { CanvasRenderingContext2D, createCanvas, Image, loadImage } from 'canvas';
+import { GlobalFonts, Image, SKRSContext2D, createCanvas, loadImage } from '@napi-rs/canvas';
 import { LevelStat } from 'warframe-items';
 
 const assetPath = join('.', 'assets', 'modFrames');
@@ -18,7 +18,7 @@ export const modRarityMap: RarityType = {
   riven: 'Omega',
 };
 
-export const flip = (frame: Image, width: number, height: number): Buffer => {
+export const flip = (frame: Image, width: number, height: number): Promise<Buffer> => {
   const canvas = createCanvas(width, height);
   const context = canvas.getContext('2d');
 
@@ -26,7 +26,7 @@ export const flip = (frame: Image, width: number, height: number): Buffer => {
   context.scale(-1, 1);
   context.drawImage(frame, 0, 0);
 
-  return canvas.toBuffer();
+  return canvas.encode('png');
 };
 
 export interface ModFrame {
@@ -107,7 +107,7 @@ export const modDescription = (
   }
 };
 
-export const wrapText = (context: CanvasRenderingContext2D, text: string, maxWidth: number): string[] => {
+export const wrapText = (context: SKRSContext2D, text: string, maxWidth: number): string[] => {
   const words = text.split(' ');
   let currentLine = '';
   const lines = [];
@@ -126,4 +126,13 @@ export const wrapText = (context: CanvasRenderingContext2D, text: string, maxWid
 
   lines.push(currentLine);
   return lines;
+};
+
+export const registerFonts = () => {
+  const fontPath = join('.', 'assets', 'fonts');
+  GlobalFonts.registerFromPath(join(fontPath, 'Khula-Light.ttf'), 'Khula');
+  GlobalFonts.registerFromPath(join(fontPath, 'Khula-Regular.ttf'), 'Khula');
+  GlobalFonts.registerFromPath(join(fontPath, 'Khula-SemiBold.ttf'), 'Khula');
+  GlobalFonts.registerFromPath(join(fontPath, 'Khula-Bold.ttf'), 'Khula');
+  GlobalFonts.registerFromPath(join(fontPath, 'Khula-ExtraBold.ttf'), 'Khula');
 };

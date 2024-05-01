@@ -16,6 +16,7 @@ describe('Generate a mod', () => {
       '/Lotus/Upgrades/Mods/Warframe/AvatarHealthMaxMod',
       '/Lotus/Upgrades/Mods/Aura/PlayerMeleeAuraMod',
       '/Lotus/Upgrades/Mods/Randomized/LotusArchgunRandomModRare',
+      '/Lotus/Powersuits/Dragon/DragonBreathAugmentCard',
     ];
 
     const testPath = join('.', 'assets', 'tests');

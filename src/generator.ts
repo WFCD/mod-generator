@@ -1,4 +1,4 @@
-import { createCanvas, loadImage } from 'canvas';
+import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { Mod, RivenMod } from 'warframe-items';
 
 import { drawBackground, drawFrame, drawLegendaryFrame } from './drawers.js';
@@ -24,7 +24,7 @@ export const generateBasicMod = async (mod: Mod, rank: number): Promise<Buffer> 
   }
   context.drawImage(await loadImage(frame), 0, 0);
 
-  return canvas.toBuffer();
+  return canvas.encode('png');
 };
 
 export const generateRivenMod = async (riven: RivenMod): Promise<Buffer> => {
@@ -56,13 +56,13 @@ export const generateRivenMod = async (riven: RivenMod): Promise<Buffer> => {
   context.drawImage(frame.top, magicCenter - 10, 70);
   context.drawImage(frame.sideLights, 249, 120);
 
-  let flipped = flip(frame.sideLights, 16 + magicCenter, 256);
+  let flipped = await flip(frame.sideLights, 16 + magicCenter, 256);
   context.drawImage(await loadImage(flipped), 2, 120);
   context.drawImage(frame.bottom, 8 - magicCenter, 340);
 
   context.drawImage(frame.cornerLights, 205 + magicCenter, 380);
-  flipped = flip(frame.cornerLights, 64, 64);
+  flipped = await flip(frame.cornerLights, 64, 64);
   context.drawImage(await loadImage(flipped), 0, 380);
 
-  return canvas.toBuffer();
+  return canvas.encode('png');
 };

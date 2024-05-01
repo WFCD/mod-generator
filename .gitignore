@@ -2,5 +2,6 @@
 node_modules/
 .idea/
 assets/
+!assets/fonts/
 coverage/
 .eslintcache

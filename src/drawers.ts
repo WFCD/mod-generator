@@ -1,7 +1,7 @@
-import { CanvasRenderingContext2D, createCanvas, loadImage } from 'canvas';
+import { SKRSContext2D, createCanvas, loadImage } from '@napi-rs/canvas';
 import { Mod } from 'warframe-items';
 
-import { flip, getBackground, getFrame, modDescription, modRarityMap, wrapText } from './utils.js';
+import { flip, getBackground, getFrame, modDescription, modRarityMap, registerFonts, wrapText } from './utils.js';
 
 const drawCommonFrame = async (tier: string, width: number, height: number) => {
   const canvas = createCanvas(width, height);
@@ -13,7 +13,7 @@ const drawCommonFrame = async (tier: string, width: number, height: number) => {
 
   // side lights
   context.drawImage(frame.sideLights, 238, 120);
-  const flipped = flip(frame.sideLights, 16, 256);
+  const flipped = await flip(frame.sideLights, 16, 256);
   context.drawImage(await loadImage(flipped), 2, 120);
   return { context, frame, canvas };
 };
@@ -23,10 +23,10 @@ export const drawLegendaryFrame = async (tier: string, width: number, height: nu
 
   // corner lights
   context.drawImage(frame.cornerLights, 200, 380);
-  const flipped = flip(frame.cornerLights, 64, 64);
+  const flipped = await flip(frame.cornerLights, 64, 64);
   context.drawImage(await loadImage(flipped), -5, 380);
 
-  return canvas.toBuffer();
+  return canvas.encode('png');
 };
 
 export const drawFrame = async (tier: string, width: number, height: number): Promise<Buffer> => {
@@ -34,10 +34,10 @@ export const drawFrame = async (tier: string, width: number, height: number): Pr
 
   // corner lights
   context.drawImage(frame.cornerLights, 200, 375);
-  const flipped = flip(frame.cornerLights, 16, 256);
+  const flipped = await flip(frame.cornerLights, 16, 256);
   context.drawImage(await loadImage(flipped), -5, 375);
 
-  return canvas.toBuffer();
+  return canvas.encode('png');
 };
 
 export interface DrawBackground {
@@ -49,35 +49,36 @@ export interface DrawBackground {
 }
 
 export const drawText = (
-  context: CanvasRenderingContext2D,
+  context: SKRSContext2D,
   name: string,
   description: string | undefined,
   compatName: string | undefined
 ) => {
+  registerFonts();
   const x = 125;
 
   context.fillStyle = 'white';
   context.textAlign = 'center';
   context.textBaseline = 'middle';
-  context.font = 'bold 20px Arial';
-  context.fillText(name, x, 315);
+  context.font = 'bold 18px "Khula"';
+  context.fillText(name, x, 280);
 
-  context.font = '12px Arial';
   if (description) {
-    let start = 335;
+    context.font = '400 12px "Khula"';
+    let start = 300;
     const lines = description.split('\n');
 
     lines.forEach((line) => {
       const texts = wrapText(context, line, 230);
       texts.forEach((text) => {
         context.fillText(text, x, start);
-        start += 20;
+        start += 15;
       });
     });
   }
 
   if (compatName) {
-    context.font = '10px Arial';
+    context.font = '600 12px "Khula"';
     context.fillText(compatName, 125, 404);
   }
 };
@@ -92,11 +93,11 @@ export const drawBackground = async (mod: Mod, width: number, height: number, ra
   context.drawImage(surface.lowerTab, 23, 390);
   if (mod.imageName) {
     const thumb = `https://cdn.warframestat.us/img/${mod.imageName}`;
-    context.drawImage(await loadImage(thumb), 10, 90, 239, 200);
+    context.drawImage(await loadImage(thumb), 0, 0, 239, 180, 10, 90, 239, 170);
   }
 
   context.drawImage(surface.backer, 205, 95);
   drawText(context, mod.name, modDescription(mod.description, mod.levelStats, rank), mod.compatName);
 
-  return canvas.toBuffer();
+  return canvas.encode('png');
 };
