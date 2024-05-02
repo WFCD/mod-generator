@@ -25,7 +25,7 @@ export const generateBasicMod = async (mod: Mod, rank: number): Promise<Buffer> 
   }
   context.drawImage(await loadImage(frame), 0, 0);
 
-  const outterCanvas = createCanvas(width, 370);
+  const outterCanvas = createCanvas(width, 372);
   const outterContext = outterCanvas.getContext('2d');
 
   const image = await canvas.encode('png');
