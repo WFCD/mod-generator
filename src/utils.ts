@@ -149,9 +149,19 @@ export const wrapText = (context: SKRSContext2D, text: string, maxWidth: number)
 
 export const registerFonts = () => {
   const fontPath = join('.', 'assets', 'fonts');
-  GlobalFonts.registerFromPath(join(fontPath, 'Khula-Light.ttf'), 'Khula');
-  GlobalFonts.registerFromPath(join(fontPath, 'Khula-Regular.ttf'), 'Khula');
-  GlobalFonts.registerFromPath(join(fontPath, 'Khula-SemiBold.ttf'), 'Khula');
-  GlobalFonts.registerFromPath(join(fontPath, 'Khula-Bold.ttf'), 'Khula');
-  GlobalFonts.registerFromPath(join(fontPath, 'Khula-ExtraBold.ttf'), 'Khula');
+  GlobalFonts.registerFromPath(join(fontPath, 'DroidSans.ttf'), 'DroidSans');
+  GlobalFonts.registerFromPath(join(fontPath, 'DroidSans-Bold.ttf'), 'DroidSans');
+  GlobalFonts.registerFromPath(join(fontPath, 'OpenSans-Regular.ttf'), 'OpenSans');
+  GlobalFonts.registerFromPath(join(fontPath, 'OpenSans-Bold.ttf'), 'OpenSans');
+};
+
+export const textColor = (tier: string) => {
+  switch (tier) {
+    case 'Bronze':
+      return '#CA9A87';
+    case 'Gold':
+      return '#FAE7BE';
+    default:
+      return '#FFFFFF';
+  }
 };

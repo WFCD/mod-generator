@@ -26,9 +26,7 @@ describe('Generate a mod', () => {
       const mod = find.findItem(mods[i]) as Mod;
       if (!mod) continue;
       const isRiven = mod.name?.includes('Riven');
-      const modCanvas = isRiven
-        ? await generateRivenMod(mod as RivenMod)
-        : await generateBasicMod(mod, mod.fusionLimit);
+      const modCanvas = isRiven ? await generateRivenMod(mod as RivenMod) : await generateBasicMod(mod, 3);
       if (!modCanvas) assert.equal(true, false, 'Failed to generate mod');
 
       writeFileSync(join('.', 'assets', 'tests', `${mod.name}.png`), modCanvas);

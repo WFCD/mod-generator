@@ -9,6 +9,7 @@ import {
   modDescription,
   modRarityMap,
   registerFonts,
+  textColor,
   wrapText,
 } from './utils.js';
 
@@ -91,35 +92,51 @@ export const drawText = (
   context: SKRSContext2D,
   name: string,
   description: string | undefined,
-  compatName: string | undefined
+  compatName: string | undefined,
+  tier: string
 ) => {
   registerFonts();
   const x = 125;
 
-  context.fillStyle = 'white';
   context.textAlign = 'center';
   context.textBaseline = 'middle';
-  context.font = 'bold 18px "Khula"';
+  context.font = 'bold 14px "DroidSans"';
+  context.fillStyle = textColor(tier);
   context.fillText(name, x, 280);
 
   if (description) {
-    context.font = '400 12px "Khula"';
+    context.font = '12px "OpenSans"';
     let start = 300;
     const lines = description.split('\n');
 
     lines.forEach((line) => {
-      const texts = wrapText(context, line, 207);
+      const texts = wrapText(context, line, 190);
       texts.forEach((text) => {
-        context.fillText(text, x, start);
+        context.fillText(text, x, start, 190);
         start += 15;
       });
     });
   }
 
   if (compatName) {
-    context.font = '600 12px "Khula"';
+    context.font = '12px "OpenSans"';
     context.fillText(compatName, 125, 404);
   }
+};
+
+const drawPolarity = async (tier: string, polarity: string): Promise<Buffer> => {
+  const size = 32;
+  const canvas = createCanvas(size, size);
+  const context = canvas.getContext('2d');
+
+  context.drawImage(await fetchPolarity(polarity), 0, 0);
+
+  context.globalCompositeOperation = 'source-in';
+
+  context.fillStyle = textColor(tier);
+  context.fillRect(0, 0, size, size);
+
+  return canvas.encode('png');
 };
 
 export const drawBackground = async (mod: Mod, width: number, height: number, rank: number = 0): Promise<Buffer> => {
@@ -136,15 +153,15 @@ export const drawBackground = async (mod: Mod, width: number, height: number, ra
   }
 
   context.drawImage(surface.backer, 205, 95);
-  drawText(context, mod.name, modDescription(mod.description, mod.levelStats, rank), mod.compatName);
+  drawText(context, mod.name, modDescription(mod.description, mod.levelStats, rank), mod.compatName, tier);
 
   if (mod.baseDrain) {
     context.font = '16px "Khula"';
-    context.fillText(mod.baseDrain?.toString(), 222, 110);
+    context.fillText(mod.baseDrain?.toString(), 222, 108);
   }
 
-  context.filter = 'invert(100%)';
-  context.drawImage(await fetchPolarity(mod.polarity), 228, 98, 20, 20);
+  const polarity = await drawPolarity(tier, mod.polarity);
+  context.drawImage(await loadImage(polarity), 230, 100, 18, 18);
 
   return canvas.encode('png');
 };
