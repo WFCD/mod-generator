@@ -114,7 +114,7 @@ export const modDescription = (
 ): string | undefined => {
   if (description && description.length !== 0) return description;
 
-  if (levelStats && levelStats[rank]) {
+  if (levelStats?.[rank]) {
     const { stats } = levelStats[rank];
 
     let desc = '';
