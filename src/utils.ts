@@ -29,13 +29,6 @@ export const flip = (frame: Image, width: number, height: number): Promise<Buffe
   return canvas.encode('png');
 };
 
-export interface ModFrame {
-  top: Image;
-  sideLights: Image;
-  bottom: Image;
-  cornerLights: Image;
-}
-
 const downloadModPiece = async (name: string) => {
   const base = 'https://cdn.warframestat.us/genesis/modFrames';
   const image = await fetch(`${base}/${name}`);
@@ -55,12 +48,25 @@ const fetchModPiece = async (name: string) => {
   return loadImage(image);
 };
 
+export interface ModFrame {
+  top: Image;
+  sideLights: Image;
+  bottom: Image;
+  cornerLights: Image;
+  rankSlotActive: Image;
+  rankSlotEmpy: Image;
+  rankCompleted: Image;
+}
+
 export const getFrame = async (tier: string): Promise<ModFrame> => {
   return {
     cornerLights: await fetchModPiece(`${tier}CornerLights.png`),
     bottom: await fetchModPiece(`${tier}FrameBottom.png`),
     top: await fetchModPiece(`${tier}FrameTop.png`),
     sideLights: await fetchModPiece(`${tier}SideLight.png`),
+    rankSlotActive: await fetchModPiece('RankSlotActive.png'),
+    rankSlotEmpy: await fetchModPiece('RankSlotEmpty.png'),
+    rankCompleted: await fetchModPiece('RankCompleteLine.png'),
   };
 };
 

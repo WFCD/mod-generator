@@ -1,7 +1,7 @@
 import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { Mod, RivenMod } from 'warframe-items';
 
-import { drawBackground, drawFrame, drawLegendaryFrame } from './drawers.js';
+import { CommonFrameParams, drawBackground, drawFrame, drawLegendaryFrame } from './drawers.js';
 import { flip, getBackground, getFrame, modRarityMap } from './utils.js';
 
 interface CanvasSize {
@@ -18,9 +18,10 @@ export const generateBasicMod = async (mod: Mod, rank: number): Promise<Buffer> 
   const background = await drawBackground(mod, width, height, rank);
   context.drawImage(await loadImage(background), 0, 0);
 
-  let frame = await drawFrame(tier, width, height);
+  const commonFrameParams: CommonFrameParams = { tier, currentRank: rank, maxRank: mod.fusionLimit, width, height };
+  let frame = await drawFrame(commonFrameParams);
   if (tier === 'Legendary') {
-    frame = await drawLegendaryFrame(tier, width, height);
+    frame = await drawLegendaryFrame(commonFrameParams);
   }
   context.drawImage(await loadImage(frame), 0, 0);
 

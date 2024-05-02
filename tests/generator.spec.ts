@@ -23,10 +23,12 @@ describe('Generate a mod', () => {
     if (!existsSync(testPath)) mkdirSync(testPath, { recursive: true });
 
     for (let i = 0; i < mods.length; i += 1) {
-      const mod = find.findItem(mods[i]);
+      const mod = find.findItem(mods[i]) as Mod;
       if (!mod) continue;
       const isRiven = mod.name?.includes('Riven');
-      const modCanvas = isRiven ? await generateRivenMod(mod as RivenMod) : await generateBasicMod(mod as Mod, 1);
+      const modCanvas = isRiven
+        ? await generateRivenMod(mod as RivenMod)
+        : await generateBasicMod(mod, mod.fusionLimit);
       if (!modCanvas) assert.equal(true, false, 'Failed to generate mod');
 
       writeFileSync(join('.', 'assets', 'tests', `${mod.name}.png`), modCanvas);

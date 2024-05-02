@@ -12,25 +12,42 @@ import {
   wrapText,
 } from './utils.js';
 
-const drawCommonFrame = async (tier: string, width: number, height: number) => {
-  const canvas = createCanvas(width, height);
+export interface CommonFrameParams {
+  tier: string;
+  currentRank: number;
+  maxRank: number;
+  width: number;
+  height: number;
+}
+
+const drawCommonFrame = async (frameParms: CommonFrameParams) => {
+  const canvas = createCanvas(frameParms.width, frameParms.height);
   const context = canvas.getContext('2d');
-  const frame = await getFrame(tier);
+  const frame = await getFrame(frameParms.tier);
 
   context.drawImage(frame.top, 0, 70);
   context.drawImage(frame.bottom, 0, 340);
 
-  // side lights
+  if (frameParms.currentRank === frameParms.maxRank) context.drawImage(frame.rankCompleted, 0, 437);
+
+  let rankSlotStart = 50;
+  if (frameParms.maxRank <= 3) rankSlotStart = 100;
+
+  for (let i = 0; i < frameParms.maxRank; i += 1) {
+    const slot = i < frameParms.currentRank ? frame.rankSlotActive : frame.rankSlotEmpy;
+    context.drawImage(slot, rankSlotStart, 435);
+    rankSlotStart += 16;
+  }
+
   context.drawImage(frame.sideLights, 238, 120);
   const flipped = await flip(frame.sideLights, 16, 256);
   context.drawImage(await loadImage(flipped), 2, 120);
   return { context, frame, canvas };
 };
 
-export const drawLegendaryFrame = async (tier: string, width: number, height: number): Promise<Buffer> => {
-  const { context, frame, canvas } = await drawCommonFrame(tier, width, height);
+export const drawLegendaryFrame = async (frameParms: CommonFrameParams): Promise<Buffer> => {
+  const { context, frame, canvas } = await drawCommonFrame(frameParms);
 
-  // corner lights
   context.drawImage(frame.cornerLights, 200, 380);
   const flipped = await flip(frame.cornerLights, 64, 64);
   context.drawImage(await loadImage(flipped), -5, 380);
@@ -38,8 +55,8 @@ export const drawLegendaryFrame = async (tier: string, width: number, height: nu
   return canvas.encode('png');
 };
 
-export const drawFrame = async (tier: string, width: number, height: number): Promise<Buffer> => {
-  const { context, frame, canvas } = await drawCommonFrame(tier, width, height);
+export const drawFrame = async (frameParms: CommonFrameParams): Promise<Buffer> => {
+  const { context, frame, canvas } = await drawCommonFrame(frameParms);
 
   // corner lights
   context.drawImage(frame.cornerLights, 200, 375);
