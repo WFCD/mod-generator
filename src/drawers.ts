@@ -28,17 +28,6 @@ const drawCommonFrame = async (frameParms: CommonFrameParams) => {
   context.drawImage(frame.top, 0, 70);
   context.drawImage(frame.bottom, 0, 340);
 
-  if (frameParms.currentRank === frameParms.maxRank) context.drawImage(frame.rankCompleted, 0, 437);
-
-  let rankSlotStart = 50;
-  if (frameParms.maxRank <= 3) rankSlotStart = 100;
-
-  for (let i = 0; i < frameParms.maxRank; i += 1) {
-    const slot = i < frameParms.currentRank ? frame.rankSlotActive : frame.rankSlotEmpy;
-    context.drawImage(slot, rankSlotStart, 435);
-    rankSlotStart += 16;
-  }
-
   context.drawImage(frame.sideLights, 238, 120);
   const flipped = await flip(frame.sideLights, 16, 256);
   context.drawImage(await loadImage(flipped), 2, 120);
@@ -52,6 +41,18 @@ export const drawLegendaryFrame = async (frameParms: CommonFrameParams): Promise
   const flipped = await flip(frame.cornerLights, 64, 64);
   context.drawImage(await loadImage(flipped), -5, 380);
 
+  if (frameParms.currentRank === frameParms.maxRank) context.drawImage(frame.rankCompleted, 0, 448);
+
+  let rankSlotStart = 50;
+  if (frameParms.maxRank <= 3) rankSlotStart *= 2;
+  if (frameParms.maxRank <= 5) rankSlotStart += 40;
+
+  for (let i = 0; i < frameParms.maxRank; i += 1) {
+    const slot = i < frameParms.currentRank ? frame.rankSlotActive : frame.rankSlotEmpy;
+    context.drawImage(slot, rankSlotStart, 445);
+    rankSlotStart += 16;
+  }
+
   return canvas.encode('png');
 };
 
@@ -62,6 +63,18 @@ export const drawFrame = async (frameParms: CommonFrameParams): Promise<Buffer> 
   context.drawImage(frame.cornerLights, 200, 375);
   const flipped = await flip(frame.cornerLights, 16, 256);
   context.drawImage(await loadImage(flipped), -5, 375);
+
+  if (frameParms.currentRank === frameParms.maxRank) context.drawImage(frame.rankCompleted, 0, 437);
+
+  let rankSlotStart = 50;
+  if (frameParms.maxRank <= 3) rankSlotStart = 100;
+  if (frameParms.maxRank <= 5 && frameParms.maxRank >= 4) rankSlotStart += 40;
+
+  for (let i = 0; i < frameParms.maxRank; i += 1) {
+    const slot = i < frameParms.currentRank ? frame.rankSlotActive : frame.rankSlotEmpy;
+    context.drawImage(slot, rankSlotStart, 435);
+    rankSlotStart += 16;
+  }
 
   return canvas.encode('png');
 };
