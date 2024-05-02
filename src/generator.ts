@@ -25,7 +25,13 @@ export const generateBasicMod = async (mod: Mod, rank: number): Promise<Buffer> 
   }
   context.drawImage(await loadImage(frame), 0, 0);
 
-  return canvas.encode('png');
+  const outterCanvas = createCanvas(width, 370);
+  const outterContext = outterCanvas.getContext('2d');
+
+  const image = await canvas.encode('png');
+  outterContext.drawImage(await loadImage(image), 0, -80);
+
+  return outterCanvas.encode('png');
 };
 
 export const generateRivenMod = async (riven: RivenMod): Promise<Buffer> => {

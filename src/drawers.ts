@@ -100,7 +100,7 @@ export const drawText = (
 
   context.textAlign = 'center';
   context.textBaseline = 'middle';
-  context.font = 'bold 14px "DroidSans"';
+  context.font = '300 16px "OpenSans"';
   context.fillStyle = textColor(tier);
   context.fillText(name, x, 280);
 
@@ -161,7 +161,7 @@ export const drawBackground = async (mod: Mod, width: number, height: number, ra
   }
 
   const polarity = await drawPolarity(tier, mod.polarity);
-  context.drawImage(await loadImage(polarity), 230, 100, 18, 18);
+  context.drawImage(await loadImage(polarity), 230, 101, 16, 16);
 
   return canvas.encode('png');
 };
