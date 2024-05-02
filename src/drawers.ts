@@ -1,7 +1,16 @@
 import { SKRSContext2D, createCanvas, loadImage } from '@napi-rs/canvas';
 import { Mod } from 'warframe-items';
 
-import { flip, getBackground, getFrame, modDescription, modRarityMap, registerFonts, wrapText } from './utils.js';
+import {
+  fetchPolarity,
+  flip,
+  getBackground,
+  getFrame,
+  modDescription,
+  modRarityMap,
+  registerFonts,
+  wrapText,
+} from './utils.js';
 
 const drawCommonFrame = async (tier: string, width: number, height: number) => {
   const canvas = createCanvas(width, height);
@@ -98,6 +107,14 @@ export const drawBackground = async (mod: Mod, width: number, height: number, ra
 
   context.drawImage(surface.backer, 205, 95);
   drawText(context, mod.name, modDescription(mod.description, mod.levelStats, rank), mod.compatName);
+
+  if (mod.baseDrain) {
+    context.font = '16px "Khula"';
+    context.fillText(mod.baseDrain?.toString(), 222, 110);
+  }
+
+  context.filter = 'invert(100%)';
+  context.drawImage(await fetchPolarity(mod.polarity), 228, 98, 20, 20);
 
   return canvas.encode('png');
 };

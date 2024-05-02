@@ -44,7 +44,7 @@ const downloadModPiece = async (name: string) => {
   return Buffer.from(await blob.arrayBuffer());
 };
 
-const fetchImage = async (name: string) => {
+const fetchModPiece = async (name: string) => {
   if (existsSync(join(assetPath, name))) readFileSync(join(assetPath, name));
 
   const image = await downloadModPiece(name);
@@ -57,10 +57,10 @@ const fetchImage = async (name: string) => {
 
 export const getFrame = async (tier: string): Promise<ModFrame> => {
   return {
-    cornerLights: await fetchImage(`${tier}CornerLights.png`),
-    bottom: await fetchImage(`${tier}FrameBottom.png`),
-    top: await fetchImage(`${tier}FrameTop.png`),
-    sideLights: await fetchImage(`${tier}SideLight.png`),
+    cornerLights: await fetchModPiece(`${tier}CornerLights.png`),
+    bottom: await fetchModPiece(`${tier}FrameBottom.png`),
+    top: await fetchModPiece(`${tier}FrameTop.png`),
+    sideLights: await fetchModPiece(`${tier}SideLight.png`),
   };
 };
 
@@ -82,10 +82,23 @@ export const getBackground = async (tier: string): Promise<ModBackground> => {
   const lowerTab = isRiven ? 'RivenLowerTab.png' : `${tier}LowerTab.png`;
 
   return {
-    background: await fetchImage(background),
-    backer: await fetchImage(backer),
-    lowerTab: await fetchImage(lowerTab),
+    background: await fetchModPiece(background),
+    backer: await fetchModPiece(backer),
+    lowerTab: await fetchModPiece(lowerTab),
   };
+};
+
+export const fetchPolarity = async (polarity: string): Promise<Image> => {
+  if (existsSync(join(assetPath, polarity))) readFileSync(join(assetPath, polarity));
+
+  const base = 'https://cdn.warframestat.us/genesis/img/polarities';
+  const res = await fetch(`${base}/${polarity}.png`);
+  const image = Buffer.from(await (await res.blob()).arrayBuffer());
+
+  if (!existsSync(assetPath)) mkdirSync(assetPath, { recursive: true });
+  writeFileSync(join(assetPath, `${polarity}.png`), image);
+
+  return loadImage(image);
 };
 
 export const modDescription = (
