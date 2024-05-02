@@ -157,11 +157,28 @@ export const drawBackground = async (mod: Mod, width: number, height: number, ra
 
   if (mod.baseDrain) {
     context.font = '16px "Khula"';
-    context.fillText(mod.baseDrain?.toString(), 222, 108);
+
+    let drain = mod.baseDrain;
+    if (drain < 0) {
+      drain = Math.abs(drain);
+      context.fillText(`+${drain + rank}`, 222, 108);
+    } else {
+      context.fillText((drain + rank).toString(), 222, 108);
+    }
   }
 
   const polarity = await drawPolarity(tier, mod.polarity);
-  context.drawImage(await loadImage(polarity), 230, 101, 16, 16);
+  const polaritySize = 16; // It's a square
+  const polarityY = 101;
+
+  const drain = mod.baseDrain;
+  if (drain && drain < 0) {
+    context.drawImage(await loadImage(polarity), 235, polarityY, polaritySize, polaritySize);
+  } else if (drain + rank >= 10) {
+    context.drawImage(await loadImage(polarity), 232, polarityY, polaritySize, polaritySize);
+  } else {
+    context.drawImage(await loadImage(polarity), 230, polarityY, polaritySize, polaritySize);
+  }
 
   return canvas.encode('png');
 };
