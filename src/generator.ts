@@ -9,7 +9,7 @@ interface CanvasSize {
   height: number;
 }
 
-export const generateBasicMod = async (mod: Mod, rank: number): Promise<Buffer> => {
+export const generateBasicMod = async (mod: Mod, rank: number = 0): Promise<Buffer> => {
   const { width, height }: CanvasSize = { width: 256, height: 512 };
   const canvas = createCanvas(width, height);
   const context = canvas.getContext('2d');
