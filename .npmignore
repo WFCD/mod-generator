@@ -1,4 +1,5 @@
 src/
+assets/readme/
 assets/tests/
 .commitlintrc.ts
 .eslintrc.yml
