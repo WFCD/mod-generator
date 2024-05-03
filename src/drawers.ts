@@ -156,12 +156,12 @@ export const drawBackground = async (mod: Mod, width: number, height: number, ra
   drawText(context, mod.name, modDescription(mod.description, mod.levelStats, rank), mod.compatName, tier);
 
   if (mod.baseDrain) {
-    context.font = '16px "Khula"';
+    context.font = '100 16px "DroidSans"';
 
     let drain = mod.baseDrain;
     if (drain < 0) {
       drain = Math.abs(drain);
-      context.fillText(`+${drain + rank}`, 222, 108);
+      context.fillText(`^${drain + rank}`, 224, 108);
     } else {
       context.fillText((drain + rank).toString(), 222, 108);
     }
@@ -173,7 +173,7 @@ export const drawBackground = async (mod: Mod, width: number, height: number, ra
 
   const drain = mod.baseDrain;
   if (drain && drain < 0) {
-    context.drawImage(await loadImage(polarity), 235, polarityY, polaritySize, polaritySize);
+    context.drawImage(await loadImage(polarity), 234, polarityY, polaritySize, polaritySize);
   } else if (drain + rank >= 10) {
     context.drawImage(await loadImage(polarity), 232, polarityY, polaritySize, polaritySize);
   } else {
