@@ -1,0 +1,13 @@
+{
+  "exclude": [
+    "node_modules"
+  ],
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "resolvePackageJsonExports": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+  }
+}

@@ -1,0 +1,7 @@
+.vscode/
+node_modules/
+.idea/
+assets/modFrames
+assets/tests
+coverage/
+.eslintcache

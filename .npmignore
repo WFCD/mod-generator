@@ -1,0 +1,7 @@
+src/
+assets/readme/
+assets/tests/
+.commitlintrc.ts
+.eslintrc.yml
+.eslintcache
+lint-staged.config.js
