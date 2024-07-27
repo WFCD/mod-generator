@@ -32,7 +32,7 @@
     "husky": "^9.1.1",
     "install-peerdeps": "^3.0.3",
     "lint-staged": "^15.2.7",
-    "mocha": "^10.6.0",
+    "mocha": "^10.7.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3"
   },
