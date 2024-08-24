@@ -14,7 +14,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@napi-rs/canvas": "^0.1.53",
+    "@napi-rs/canvas": "^0.1.54",
     "warframe-items": "^1.1262.115"
   },
   "devDependencies": {
