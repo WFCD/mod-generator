@@ -15,7 +15,7 @@
   "license": "MIT",
   "dependencies": {
     "@napi-rs/canvas": "^0.1.53",
-    "warframe-items": "^1.1262.109"
+    "warframe-items": "^1.1262.115"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.4.0",
@@ -62,6 +62,6 @@
     "skip-full": true
   },
   "peerDependencies": {
-    "warframe-items": "^1.1262.109"
+    "warframe-items": "^1.1262.115"
   }
 }
