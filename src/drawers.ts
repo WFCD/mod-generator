@@ -100,12 +100,12 @@ export const drawText = (
 
   context.textAlign = 'center';
   context.textBaseline = 'middle';
-  context.font = '300 16px "OpenSans"';
+  context.font = '300 16px "Roboto"';
   context.fillStyle = textColor(tier);
   context.fillText(name, x, 280);
 
   if (description) {
-    context.font = '12px "OpenSans"';
+    context.font = '12px "Roboto"';
     let start = 300;
     const lines = description.split('\n');
 
@@ -119,7 +119,7 @@ export const drawText = (
   }
 
   if (compatName) {
-    context.font = '12px "OpenSans"';
+    context.font = '12px "Roboto"';
     context.fillText(compatName, 125, 404);
   }
 };
@@ -156,7 +156,7 @@ export const drawBackground = async (mod: Mod, width: number, height: number, ra
   drawText(context, mod.name, modDescription(mod.description, mod.levelStats, rank), mod.compatName, tier);
 
   if (mod.baseDrain) {
-    context.font = '100 16px "DroidSans"';
+    context.font = '300 16px "Roboto"';
 
     let drain = mod.baseDrain;
     if (drain < 0) {
