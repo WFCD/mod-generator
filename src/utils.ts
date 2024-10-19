@@ -2,7 +2,7 @@ import { existsSync } from 'fs';
 import { join } from 'path';
 import { readFile, mkdir, writeFile } from 'fs/promises';
 
-import { GlobalFonts, Image, SKRSContext2D, createCanvas, loadImage } from '@napi-rs/canvas';
+import { AvifConfig, Canvas, GlobalFonts, Image, SKRSContext2D, createCanvas, loadImage } from '@napi-rs/canvas';
 import { LevelStat } from 'warframe-items';
 
 const assetPath = join('.', 'assets', 'modFrames');
@@ -175,5 +175,26 @@ export const textColor = (tier: string) => {
       return '#FAE7BE';
     default:
       return '#FFFFFF';
+  }
+};
+
+export type Format = 'webp' | 'jpeg' | 'avif' | 'png';
+
+export interface CanvasOutput {
+  quality?: number;
+  format: Format;
+  cfg?: AvifConfig;
+}
+
+export const exportCanvas = async (canvas: Canvas, output: CanvasOutput = { format: 'png' }) => {
+  switch (output.format) {
+    case 'png':
+      return canvas.encode('png');
+    case 'webp':
+      return canvas.encode('webp', output.quality);
+    case 'jpeg':
+      return canvas.encode('jpeg', output.quality);
+    case 'avif':
+      return canvas.encode('avif', output.cfg);
   }
 };

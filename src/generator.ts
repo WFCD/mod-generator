@@ -2,14 +2,18 @@ import { createCanvas, loadImage } from '@napi-rs/canvas';
 import { Mod, RivenMod } from 'warframe-items';
 
 import { CommonFrameParams, drawBackground, drawFrame, drawLegendaryFrame } from './drawers.js';
-import { flip, getBackground, getFrame, modRarityMap } from './utils.js';
+import { CanvasOutput, exportCanvas, flip, getBackground, getFrame, modRarityMap } from './utils.js';
 
 interface CanvasSize {
   width: number;
   height: number;
 }
 
-export const generateBasicMod = async (mod: Mod, rank: number = 0): Promise<Buffer> => {
+export const generateBasicMod = async (
+  mod: Mod,
+  rank?: number,
+  output: CanvasOutput = { format: 'png' }
+): Promise<Buffer> => {
   const { width, height }: CanvasSize = { width: 256, height: 512 };
   const canvas = createCanvas(width, height);
   const context = canvas.getContext('2d');
@@ -18,7 +22,14 @@ export const generateBasicMod = async (mod: Mod, rank: number = 0): Promise<Buff
   const background = await drawBackground(mod, width, height, rank);
   context.drawImage(await loadImage(background), 0, 0);
 
-  const commonFrameParams: CommonFrameParams = { tier, currentRank: rank, maxRank: mod.fusionLimit, width, height };
+  const commonFrameParams: CommonFrameParams = {
+    tier,
+    currentRank: rank ?? mod.fusionLimit,
+    maxRank: mod.fusionLimit,
+    width,
+    height,
+  };
+
   let frame = await drawFrame(commonFrameParams);
   if (tier === 'Legendary') {
     frame = await drawLegendaryFrame(commonFrameParams);
@@ -31,10 +42,10 @@ export const generateBasicMod = async (mod: Mod, rank: number = 0): Promise<Buff
   const image = await canvas.encode('png');
   outterContext.drawImage(await loadImage(image), 0, -80);
 
-  return outterCanvas.encode('png');
+  return exportCanvas(canvas, output);
 };
 
-export const generateRivenMod = async (riven: RivenMod): Promise<Buffer> => {
+export const generateRivenMod = async (riven: RivenMod, output: CanvasOutput = { format: 'png' }): Promise<Buffer> => {
   const canvas = createCanvas(282, 512);
   const context = canvas.getContext('2d');
   const tier = modRarityMap.riven;
@@ -71,5 +82,15 @@ export const generateRivenMod = async (riven: RivenMod): Promise<Buffer> => {
   flipped = await flip(frame.cornerLights, 64, 64);
   context.drawImage(await loadImage(flipped), 0, 380);
 
-  return canvas.encode('png');
+  return exportCanvas(canvas, output);
+};
+
+export const generateMod = async (
+  mod: Mod,
+  rank?: number,
+  output: CanvasOutput = { format: 'png' }
+): Promise<Buffer> => {
+  const isRiven = mod.name?.includes('Riven');
+
+  return isRiven ? generateRivenMod(mod as RivenMod, output) : generateBasicMod(mod, rank ?? mod.fusionLimit, output);
 };
