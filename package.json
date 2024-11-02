@@ -23,7 +23,7 @@
     "@commitlint/types": "^19.5.0",
     "@types/chai": "^5.0.0",
     "@types/mocha": "^10.0.9",
-    "@types/node": "^22.7.6",
+    "@types/node": "^22.8.6",
     "@wfcd/eslint-config": "^1.6.3",
     "c8": "^10.1.2",
     "chai": "^5.1.1",
