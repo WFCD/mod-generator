@@ -20,6 +20,7 @@ describe('Generate a mod', () => {
       '/Lotus/Upgrades/Mods/Aura/PlayerMeleeAuraMod',
       '/Lotus/Upgrades/Mods/Randomized/LotusArchgunRandomModRare',
       '/Lotus/Powersuits/Dragon/DragonBreathAugmentCard',
+      '/Lotus/Upgrades/Mods/Randomized/RawShotgunRandomMod',
     ];
 
     const testPath = join('.', 'assets', 'tests');

@@ -92,7 +92,7 @@ export const generateMod = async (
   rank?: number,
   output: CanvasOutput = { format: 'png' }
 ): Promise<Buffer | undefined> => {
-  const isRiven = mod.name?.includes('Riven');
+  const isRiven = mod.uniqueName.match(/Randomized/);
 
   return isRiven ? generateRivenMod(mod as RivenMod, output) : generateBasicMod(mod, rank ?? mod.fusionLimit, output);
 };
