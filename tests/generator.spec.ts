@@ -36,7 +36,7 @@ describe('Generate a mod', () => {
           const modCanvas = await generateMod(mod, undefined, { format: format as Format });
           if (!modCanvas) assert.equal(true, false, 'Failed to generate mod');
 
-          await writeFile(join(imagePath, `${mod.name}.${format}`), modCanvas);
+          if (modCanvas) await writeFile(join(imagePath, `${mod.name}.${format}`), modCanvas);
         };
       });
     }

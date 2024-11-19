@@ -183,14 +183,18 @@ export interface CanvasOutput {
 }
 
 export const exportCanvas = async (canvas: Canvas, output: CanvasOutput = { format: 'png' }) => {
-  switch (output.format) {
-    case 'png':
-      return canvas.encode('png');
-    case 'webp':
-      return canvas.encode('webp', output.quality);
-    case 'jpeg':
-      return canvas.encode('jpeg', output.quality);
-    case 'avif':
-      return canvas.encode('avif', output.cfg);
+  try {
+    switch (output.format) {
+      case 'png':
+        return await canvas.encode('png');
+      case 'webp':
+        return await canvas.encode('webp', output.quality);
+      case 'jpeg':
+        return await canvas.encode('jpeg', output.quality);
+      case 'avif':
+        return await canvas.encode('avif', output.cfg);
+    }
+  } catch {
+    console.error(`failed to export canvas as ${output.format}`);
   }
 };

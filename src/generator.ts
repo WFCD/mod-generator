@@ -13,7 +13,7 @@ export const generateBasicMod = async (
   mod: Mod,
   rank?: number,
   output: CanvasOutput = { format: 'png' }
-): Promise<Buffer> => {
+): Promise<Buffer | undefined> => {
   const { width, height }: CanvasSize = { width: 256, height: 512 };
   const canvas = createCanvas(width, height);
   const context = canvas.getContext('2d');
@@ -44,7 +44,10 @@ export const generateBasicMod = async (
   return exportCanvas(canvas, output);
 };
 
-export const generateRivenMod = async (riven: RivenMod, output: CanvasOutput = { format: 'png' }): Promise<Buffer> => {
+export const generateRivenMod = async (
+  riven: RivenMod,
+  output: CanvasOutput = { format: 'png' }
+): Promise<Buffer | undefined> => {
   const canvas = createCanvas(282, 512);
   const context = canvas.getContext('2d');
   const tier = modRarityMap.riven;
@@ -88,7 +91,7 @@ export const generateMod = async (
   mod: Mod,
   rank?: number,
   output: CanvasOutput = { format: 'png' }
-): Promise<Buffer> => {
+): Promise<Buffer | undefined> => {
   const isRiven = mod.name?.includes('Riven');
 
   return isRiven ? generateRivenMod(mod as RivenMod, output) : generateBasicMod(mod, rank ?? mod.fusionLimit, output);
