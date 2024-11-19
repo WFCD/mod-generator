@@ -47,11 +47,9 @@ const fetchModPiece = async (name: string) => {
   }
 
   const image = await downloadModPiece(name);
-  if (!existsSync(assetPath)) {
-    await mkdir(assetPath, { recursive: true });
-    await writeFile(filePath, image);
-  }
+  if (!existsSync(assetPath)) await mkdir(assetPath, { recursive: true });
 
+  await writeFile(filePath, image);
   return loadImage(image);
 };
 
@@ -113,11 +111,9 @@ export const fetchPolarity = async (polarity: string): Promise<Image> => {
   const res = await fetch(`${base}/${polarity}.png`);
 
   const image = Buffer.from(await (await res.blob()).arrayBuffer());
-  if (!existsSync(assetPath)) {
-    await mkdir(assetPath, { recursive: true });
-    await writeFile(join(assetPath, `${polarity}.png`), image);
-  }
+  if (!existsSync(assetPath)) await mkdir(assetPath, { recursive: true });
 
+  await writeFile(join(assetPath, `${polarity}.png`), image);
   return loadImage(image);
 };
 
