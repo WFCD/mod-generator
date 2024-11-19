@@ -39,8 +39,7 @@ export const generateBasicMod = async (
   const outterCanvas = createCanvas(width, 372);
   const outterContext = outterCanvas.getContext('2d');
 
-  const image = await canvas.encode('png');
-  outterContext.drawImage(await loadImage(image), 0, -80);
+  outterContext.drawImage(canvas, 0, -80);
 
   return exportCanvas(canvas, output);
 };
