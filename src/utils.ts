@@ -183,6 +183,11 @@ export interface CanvasOutput {
 }
 
 export const exportCanvas = async (canvas: Canvas, output: CanvasOutput = { format: 'png' }) => {
+  const quality = output.quality || output.cfg?.quality;
+  if (quality !== undefined && (quality < 0 || quality > 100)) {
+    throw new Error('quality cannot be less then 0 or more then 100');
+  }
+
   try {
     switch (output.format) {
       case 'png':
