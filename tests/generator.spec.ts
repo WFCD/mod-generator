@@ -1,15 +1,18 @@
 import * as assert from 'node:assert';
-import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { readdir, writeFile } from 'node:fs/promises';
 
 import { describe, test } from 'mocha';
-import { Mod, RivenMod } from 'warframe-items';
+import { Mod } from 'warframe-items';
 import { find } from 'warframe-items/utilities';
 
-import { generateBasicMod, generateRivenMod } from '../src/generator.js';
+import { generateMod } from '../src/generator.js';
+import { Format } from '../src/utils.js';
 
 describe('Generate a mod', () => {
-  test('run test', async () => {
+  test('run test', () => {
+    const formats = ['webp', 'jpeg', 'avif', 'png'];
     const mods = [
       '/Lotus/Upgrades/Mods/Warframe/Kahl/KahlAvatarAbilityStrengthMod',
       '/Lotus/Upgrades/Mods/Warframe/AvatarAbilityEfficiencyMod',
@@ -17,23 +20,33 @@ describe('Generate a mod', () => {
       '/Lotus/Upgrades/Mods/Aura/PlayerMeleeAuraMod',
       '/Lotus/Upgrades/Mods/Randomized/LotusArchgunRandomModRare',
       '/Lotus/Powersuits/Dragon/DragonBreathAugmentCard',
+      '/Lotus/Upgrades/Mods/Randomized/RawShotgunRandomMod',
     ];
 
     const testPath = join('.', 'assets', 'tests');
     if (!existsSync(testPath)) mkdirSync(testPath, { recursive: true });
 
     for (let i = 0; i < mods.length; i += 1) {
-      const mod = find.findItem(mods[i]) as Mod;
-      if (!mod) continue;
-      const isRiven = mod.name?.includes('Riven');
-      const modCanvas = isRiven
-        ? await generateRivenMod(mod as RivenMod)
-        : await generateBasicMod(mod, mod.fusionLimit);
-      if (!modCanvas) assert.equal(true, false, 'Failed to generate mod');
+      formats.forEach((format) => {
+        return async () => {
+          const imagePath = join(testPath, format);
+          if (!existsSync(imagePath)) mkdirSync(imagePath, { recursive: true });
 
-      writeFileSync(join('.', 'assets', 'tests', `${mod.name}.png`), modCanvas);
+          const mod = find.findItem(mods[i]) as Mod;
+          if (!mod) return;
+          const modCanvas = await generateMod(mod, undefined, { format: format as Format });
+          if (!modCanvas) assert.equal(true, false, 'Failed to generate mod');
+
+          if (modCanvas) await writeFile(join(imagePath, `${mod.name}.${format}`), modCanvas);
+        };
+      });
     }
-    const testFiles = readdirSync(join('.', 'assets/tests'));
-    assert.equal(testFiles.length, mods.length);
+
+    formats.forEach((format) => {
+      return async () => {
+        const testFiles = await readdir(join(testPath, format));
+        assert.equal(testFiles.length, mods.length);
+      };
+    });
   });
 });
