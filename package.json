@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@commitlint/cli": "^19.5.0",
-    "@commitlint/config-conventional": "^19.5.0",
+    "@commitlint/config-conventional": "^19.6.0",
     "@commitlint/types": "^19.5.0",
     "@types/chai": "^5.0.1",
     "@types/mocha": "^10.0.9",
