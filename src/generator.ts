@@ -68,7 +68,7 @@ const generate = async (
   context.drawImage(backgroundGen, centerX, centerY);
 
   if (top.width > background.width) {
-    const newXPadding = horizantalPad * 6;
+    const newXPadding = horizontalPad * 6;
     const widthDiff = top.width - background.width - newXPadding;
     context.drawImage(top, -widthDiff / 2, background.height * 0.14);
   } else {
