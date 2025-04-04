@@ -13,7 +13,7 @@ import {
 } from './utils.js';
 
 export const verticalPad = 70;
-export const horizantalPad = 7;
+export const horizontalPad = 7;
 
 const drawPolarity = async (tier: string, polarity: string): Promise<Image> => {
   const image = await fetchPolarity(polarity);
@@ -149,10 +149,10 @@ export const backgroundImage = async (props: BackgroundProps): Promise<Image> =>
 
   if (mod.imageName || image) {
     const thumb = await loadImage(image ?? `https://cdn.warframestat.us/img/${mod.imageName}`);
-    const thumbWidth = canvas.width - horizantalPad * 2;
+    const thumbWidth = canvas.width - horizontalPad * 2;
     const thumbHeight = 170;
 
-    context.drawImage(thumb, horizantalPad, canvas.height * 0.17, thumbWidth, thumbHeight);
+    context.drawImage(thumb, horizontalPad, canvas.height * 0.17, thumbWidth, thumbHeight);
   }
 
   const sideLightsY = background.height * 0.21;

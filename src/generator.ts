@@ -1,7 +1,7 @@
 import { createCanvas } from '@napi-rs/canvas';
 import { Mod } from 'warframe-items';
 
-import { backgroundImage, bottomImage, horizantalPad, verticalPad } from './drawers.js';
+import { backgroundImage, bottomImage, horizontalPad, verticalPad } from './drawers.js';
 import { CanvasOutput, exportCanvas, getBackground, getFrame, getTier, modRarityMap, registerFonts } from './utils.js';
 
 /**
@@ -60,7 +60,7 @@ const generate = async (
   context.drawImage(backgroundGen, centerX, centerY);
 
   if (top.width > background.width) {
-    const newXPadding = horizantalPad * 6;
+    const newXPadding = horizontalPad * 6;
     const widthDiff = top.width - background.width - newXPadding;
     context.drawImage(top, -widthDiff / 2, background.height * 0.14);
   } else {
@@ -68,7 +68,7 @@ const generate = async (
   }
 
   if (bottom.width > background.width) {
-    const newXPadding = horizantalPad * 6;
+    const newXPadding = horizontalPad * 6;
     const widthDiff = bottom.width - background.width - newXPadding;
     context.drawImage(
       await bottomImage({ bottom, cornerLights, tier, max: mod.fusionLimit, rank }),
