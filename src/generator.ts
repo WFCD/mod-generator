@@ -1,98 +1,94 @@
-import { createCanvas, loadImage } from '@napi-rs/canvas';
-import { Mod, RivenMod } from 'warframe-items';
+import { createCanvas } from '@napi-rs/canvas';
+import { Mod } from 'warframe-items';
 
-import { CommonFrameParams, drawBackground, drawFrame, drawLegendaryFrame } from './drawers.js';
-import { CanvasOutput, exportCanvas, flip, getBackground, getFrame, modRarityMap } from './utils.js';
+import { backgroundImage, bottomImage, horizantalPad, verticalPad } from './drawers.js';
+import { CanvasOutput, exportCanvas, getBackground, getFrame, getTier, modRarityMap, registerFonts } from './utils.js';
 
-interface CanvasSize {
-  width: number;
-  height: number;
-}
-
-export const generateBasicMod = async (
+/**
+ * Generates a complete mod image
+ *
+ * Supported types:
+ *  - common
+ *  - uncommon
+ *  - gold
+ *  - primed
+ *  - rivens
+ *
+ * None supported mod types will default to using common as it's frame
+ *
+ * Notes:
+ *  - Archon mods will use the gold mod frame
+ * @param {Mod} mod The Mod to build the image on
+ * @param {CanvasOutput} output The image format to export as (png, webp, avif, jpeg)
+ * @param {number | undefined} rank The rank the mod would be at. Can be empty to show unranked
+ * @param {string | undefined} image Optional thumbnail to show instead of the mod default thumbnail (Good for memes)
+ * @returns {Promise<Buffer<ArrayBufferLike> | undefined>}
+ */
+const generate = async (
   mod: Mod,
+  output: CanvasOutput = { format: 'png' },
   rank?: number,
-  output: CanvasOutput = { format: 'png' }
-): Promise<Buffer | undefined> => {
-  const { width, height }: CanvasSize = { width: 256, height: 512 };
-  const canvas = createCanvas(width, height);
+  image?: string
+): Promise<Buffer<ArrayBufferLike> | undefined> => {
+  // All values here should be percentages based on the background size and NOT on the canvas size.
+  // The reason for this is that special mod pieces have a bigger width then the base 256 width of the background,
+  // so the canvas has to be big enough to keep those parts in view.
+  const tier = getTier(mod);
+  const isRiven = tier === modRarityMap.riven;
+
+  const canvas = createCanvas(isRiven ? 292 : 256, 512);
   const context = canvas.getContext('2d');
-  const tier = modRarityMap[mod.rarity?.toLocaleLowerCase() ?? 'common'];
 
-  const background = await drawBackground(mod, width, height, rank);
-  context.drawImage(await loadImage(background), 0, 0);
+  const { background, backer, lowerTab } = await getBackground(tier);
+  const { cornerLights, bottom, top, sideLights } = await getFrame(tier);
 
-  const commonFrameParams: CommonFrameParams = {
-    tier,
-    currentRank: rank ?? mod.fusionLimit,
-    maxRank: mod.fusionLimit,
-    width,
-    height,
-  };
+  const centerX = (canvas.width - background.width) / 2;
+  const centerY = (canvas.height - background.height) / 2;
 
-  let frame = await drawFrame(commonFrameParams);
-  if (tier === 'Legendary') {
-    frame = await drawLegendaryFrame(commonFrameParams);
+  registerFonts();
+
+  const backgroundGen = await backgroundImage({
+    background,
+    sideLights,
+    backer,
+    lowerTab,
+    bottom: { width: bottom.width, height: bottom.height },
+    mod,
+    rank,
+    image,
+  });
+  context.drawImage(backgroundGen, centerX, centerY);
+
+  if (top.width > background.width) {
+    const newXPadding = horizantalPad * 6;
+    const widthDiff = top.width - background.width - newXPadding;
+    context.drawImage(top, -widthDiff / 2, background.height * 0.14);
+  } else {
+    context.drawImage(top, centerX, background.height * 0.14);
   }
-  context.drawImage(await loadImage(frame), 0, 0);
 
-  const outterCanvas = createCanvas(width, 372);
+  if (bottom.width > background.width) {
+    const newXPadding = horizantalPad * 6;
+    const widthDiff = bottom.width - background.width - newXPadding;
+    context.drawImage(
+      await bottomImage({ bottom, cornerLights, tier, max: mod.fusionLimit, rank }),
+      -widthDiff / 2,
+      background.height * 0.65
+    );
+  } else {
+    context.drawImage(
+      await bottomImage({ bottom, cornerLights, tier, max: mod.fusionLimit, rank }),
+      centerX,
+      background.height * 0.65
+    );
+  }
+
+  const outterCanvas = createCanvas(isRiven ? 292 : 256, 512 - verticalPad);
   const outterContext = outterCanvas.getContext('2d');
 
-  outterContext.drawImage(canvas, 0, -80);
+  outterContext.drawImage(canvas, (outterCanvas.width - canvas.width) / 2, (outterCanvas.height - canvas.height) / 2);
 
-  return exportCanvas(canvas, output);
+  return exportCanvas(outterCanvas, output);
 };
 
-export const generateRivenMod = async (
-  riven: RivenMod,
-  output: CanvasOutput = { format: 'png' }
-): Promise<Buffer | undefined> => {
-  const canvas = createCanvas(282, 512);
-  const context = canvas.getContext('2d');
-  const tier = modRarityMap.riven;
-
-  const magicCenter = 12;
-
-  const surface = await getBackground(tier);
-  context.drawImage(surface.background, magicCenter, 0);
-  if (riven.imageName) {
-    const thumb = `https://cdn.warframestat.us/img/${riven.imageName}`;
-    context.drawImage(await loadImage(thumb), 10 + magicCenter, 110, 239, 200);
-  }
-
-  context.drawImage(surface.backer, 205 + magicCenter, 95);
-  context.drawImage(surface.lowerTab, 23 + magicCenter, 380);
-
-  const x = 125 + magicCenter;
-  context.fillStyle = 'white';
-  context.textAlign = 'center';
-  context.fillText(riven.name, x, 300);
-  context.fillText(riven.description ?? '', x, 315);
-
-  if (riven.compatName) context.fillText(riven.compatName, 125 + magicCenter, 396);
-
-  const frame = await getFrame(tier);
-  context.drawImage(frame.top, magicCenter - 10, 70);
-  context.drawImage(frame.sideLights, 249, 120);
-
-  let flipped = await flip(frame.sideLights, 16 + magicCenter, 256);
-  context.drawImage(await loadImage(flipped), 2, 120);
-  context.drawImage(frame.bottom, 8 - magicCenter, 340);
-
-  context.drawImage(frame.cornerLights, 205 + magicCenter, 380);
-  flipped = await flip(frame.cornerLights, 64, 64);
-  context.drawImage(await loadImage(flipped), 0, 380);
-
-  return exportCanvas(canvas, output);
-};
-
-export const generateMod = async (
-  mod: Mod,
-  rank?: number,
-  output: CanvasOutput = { format: 'png' }
-): Promise<Buffer | undefined> => {
-  const isRiven = mod.uniqueName.match(/Randomized/);
-
-  return isRiven ? generateRivenMod(mod as RivenMod, output) : generateBasicMod(mod, rank ?? mod.fusionLimit, output);
-};
+export default generate;

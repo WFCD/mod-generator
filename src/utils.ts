@@ -3,7 +3,7 @@ import { join } from 'path';
 import { readFile, mkdir, writeFile } from 'fs/promises';
 
 import { AvifConfig, Canvas, GlobalFonts, Image, SKRSContext2D, createCanvas, loadImage } from '@napi-rs/canvas';
-import { LevelStat } from 'warframe-items';
+import { LevelStat, Mod } from 'warframe-items';
 
 const assetPath = join('.', 'assets', 'modFrames');
 
@@ -19,15 +19,22 @@ export const modRarityMap: RarityType = {
   riven: 'Omega',
 };
 
-export const flip = (frame: Image, width: number, height: number): Promise<Buffer> => {
-  const canvas = createCanvas(width, height);
+export const getTier = (mod: Mod) => {
+  if (mod.type.includes('Riven')) return modRarityMap.riven;
+  if (mod.name.includes('Archon')) return modRarityMap.rare;
+
+  return modRarityMap[mod.rarity?.toLocaleLowerCase() ?? 'common'];
+};
+
+export const flip = async (image: Image): Promise<Image> => {
+  const canvas = createCanvas(image.width, image.height);
   const context = canvas.getContext('2d');
 
-  context.translate(width, 0);
+  context.translate(image.width, 0);
   context.scale(-1, 1);
-  context.drawImage(frame, 0, 0);
+  context.drawImage(image, 0, 0);
 
-  return canvas.encode('png');
+  return loadImage(await canvas.encode('png'));
 };
 
 const downloadModPiece = async (name: string) => {
@@ -38,7 +45,7 @@ const downloadModPiece = async (name: string) => {
   return Buffer.from(await blob.arrayBuffer());
 };
 
-const fetchModPiece = async (name: string) => {
+export const fetchModPiece = async (name: string) => {
   const filePath = join(assetPath, name);
   if (existsSync(filePath)) {
     const image = await readFile(filePath);
@@ -58,9 +65,6 @@ export interface ModFrame {
   sideLights: Image;
   bottom: Image;
   cornerLights: Image;
-  rankSlotActive: Image;
-  rankSlotEmpy: Image;
-  rankCompleted: Image;
 }
 
 export const getFrame = async (tier: string): Promise<ModFrame> => {
@@ -69,9 +73,6 @@ export const getFrame = async (tier: string): Promise<ModFrame> => {
     bottom: await fetchModPiece(`${tier}FrameBottom.png`),
     top: await fetchModPiece(`${tier}FrameTop.png`),
     sideLights: await fetchModPiece(`${tier}SideLight.png`),
-    rankSlotActive: await fetchModPiece('RankSlotActive.png'),
-    rankSlotEmpy: await fetchModPiece('RankSlotEmpty.png'),
-    rankCompleted: await fetchModPiece('RankCompleteLine.png'),
   };
 };
 
@@ -159,19 +160,26 @@ export const wrapText = (context: SKRSContext2D, text: string, maxWidth: number)
 
 export const registerFonts = () => {
   const fontPath = join('.', 'assets', 'fonts');
-  GlobalFonts.registerFromPath(join(fontPath, 'Roboto-Bold.ttf'), 'Roboto');
+  GlobalFonts.registerFromPath(join(fontPath, 'Roboto-Light.ttf'), 'Roboto');
   GlobalFonts.registerFromPath(join(fontPath, 'Roboto-Regular.ttf'), 'Roboto');
+  GlobalFonts.registerFromPath(join(fontPath, 'Roboto-Bold.ttf'), 'Roboto');
+};
+
+type TierColor = {
+  [key: string]: string;
+};
+
+export const tierColor: TierColor = {
+  Bronze: '#CA9A87',
+  Silver: '#FFFFFF',
+  Gold: '#FAE7BE',
+  Omega: '#AC83D5',
 };
 
 export const textColor = (tier: string) => {
-  switch (tier) {
-    case 'Bronze':
-      return '#CA9A87';
-    case 'Gold':
-      return '#FAE7BE';
-    default:
-      return '#FFFFFF';
-  }
+  if (tier === 'Legendary') return tierColor.Silver;
+
+  return tierColor[tier];
 };
 
 export type Format = 'webp' | 'jpeg' | 'avif' | 'png';
@@ -200,6 +208,6 @@ export const exportCanvas = async (canvas: Canvas, output: CanvasOutput = { form
         return await canvas.encode('avif', output.cfg);
     }
   } catch {
-    console.error(`failed to export canvas as ${output.format}`);
+    throw Error(`failed to export canvas as ${output.format}`);
   }
 };
