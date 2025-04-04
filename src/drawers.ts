@@ -1,184 +1,273 @@
-import { SKRSContext2D, createCanvas, loadImage } from '@napi-rs/canvas';
+import { Image, createCanvas, loadImage } from '@napi-rs/canvas';
 import { Mod } from 'warframe-items';
 
 import {
   fetchPolarity,
-  flip,
-  getBackground,
-  getFrame,
-  modDescription,
-  modRarityMap,
-  registerFonts,
+  fetchModPiece,
   textColor,
   wrapText,
+  modRarityMap,
+  modDescription,
+  flip,
+  getTier,
 } from './utils.js';
 
-export interface CommonFrameParams {
-  tier: string;
-  currentRank: number;
-  maxRank: number;
-  width: number;
-  height: number;
-}
+export const verticalPad = 70;
+export const horizantalPad = 7;
 
-const drawCommonFrame = async (frameParms: CommonFrameParams) => {
-  const canvas = createCanvas(frameParms.width, frameParms.height);
-  const context = canvas.getContext('2d');
-  const frame = await getFrame(frameParms.tier);
+const drawPolarity = async (tier: string, polarity: string): Promise<Image> => {
+  const image = await fetchPolarity(polarity);
 
-  context.drawImage(frame.top, 0, 70);
-  context.drawImage(frame.bottom, 0, 340);
-
-  context.drawImage(frame.sideLights, 238, 120);
-  const flipped = await flip(frame.sideLights, 16, 256);
-  context.drawImage(await loadImage(flipped), 2, 120);
-  return { context, frame, canvas };
-};
-
-export const drawLegendaryFrame = async (frameParms: CommonFrameParams): Promise<Buffer> => {
-  const { context, frame, canvas } = await drawCommonFrame(frameParms);
-
-  context.drawImage(frame.cornerLights, 200, 380);
-  const flipped = await flip(frame.cornerLights, 64, 64);
-  context.drawImage(await loadImage(flipped), -5, 380);
-
-  if (frameParms.currentRank === frameParms.maxRank) context.drawImage(frame.rankCompleted, 0, 448);
-
-  let rankSlotStart = 50;
-  if (frameParms.maxRank <= 3) rankSlotStart *= 2;
-  if (frameParms.maxRank <= 5) rankSlotStart += 40;
-
-  for (let i = 0; i < frameParms.maxRank; i += 1) {
-    const slot = i < frameParms.currentRank ? frame.rankSlotActive : frame.rankSlotEmpy;
-    context.drawImage(slot, rankSlotStart, 445);
-    rankSlotStart += 16;
-  }
-
-  return canvas.encode('png');
-};
-
-export const drawFrame = async (frameParms: CommonFrameParams): Promise<Buffer> => {
-  const { context, frame, canvas } = await drawCommonFrame(frameParms);
-
-  // corner lights
-  context.drawImage(frame.cornerLights, 200, 375);
-  const flipped = await flip(frame.cornerLights, 16, 256);
-  context.drawImage(await loadImage(flipped), -5, 375);
-
-  if (frameParms.currentRank === frameParms.maxRank) context.drawImage(frame.rankCompleted, 0, 437);
-
-  let rankSlotStart = 50;
-  if (frameParms.maxRank <= 3) rankSlotStart = 100;
-  if (frameParms.maxRank <= 5 && frameParms.maxRank >= 4) rankSlotStart += 40;
-
-  for (let i = 0; i < frameParms.maxRank; i += 1) {
-    const slot = i < frameParms.currentRank ? frame.rankSlotActive : frame.rankSlotEmpy;
-    context.drawImage(slot, rankSlotStart, 435);
-    rankSlotStart += 16;
-  }
-
-  return canvas.encode('png');
-};
-
-export interface DrawBackground {
-  tier: string;
-  thumbnail: string | undefined;
-  name: string;
-  description: string;
-  compatName: string | undefined;
-}
-
-export const drawText = (
-  context: SKRSContext2D,
-  name: string,
-  description: string | undefined,
-  compatName: string | undefined,
-  tier: string
-) => {
-  registerFonts();
-  const x = 125;
-
-  context.textAlign = 'center';
-  context.textBaseline = 'middle';
-  context.font = '300 16px "Roboto"';
-  context.fillStyle = textColor(tier);
-  context.fillText(name, x, 280);
-
-  if (description) {
-    context.font = '12px "Roboto"';
-    let start = 300;
-    const lines = description.split('\n');
-
-    lines.forEach((line) => {
-      const texts = wrapText(context, line, 190);
-      texts.forEach((text) => {
-        context.fillText(text, x, start, 190);
-        start += 15;
-      });
-    });
-  }
-
-  if (compatName) {
-    context.font = '12px "Roboto"';
-    context.fillText(compatName, 125, 404);
-  }
-};
-
-const drawPolarity = async (tier: string, polarity: string): Promise<Buffer> => {
   const size = 32;
   const canvas = createCanvas(size, size);
   const context = canvas.getContext('2d');
 
-  context.drawImage(await fetchPolarity(polarity), 0, 0);
+  context.drawImage(image, 0, 0);
 
   context.globalCompositeOperation = 'source-in';
 
   context.fillStyle = textColor(tier);
   context.fillRect(0, 0, size, size);
 
-  return canvas.encode('png');
+  return loadImage(await canvas.encode('png'));
 };
 
-export const drawBackground = async (mod: Mod, width: number, height: number, rank: number = 0): Promise<Buffer> => {
-  const canvas = createCanvas(width, height);
+/**
+ * Props used in creating the image of a backer
+ */
+interface BackerImageProps {
+  backer: Image;
+  tier: string;
+  base: number;
+  polarity: string;
+  rank?: number;
+}
+
+/**
+ * Creates a backer image with polarity and drain.
+ *
+ * - Final drain is based on the `rank`
+ * - `rank` starting in the negatives will add a `+` before the drain
+ * - Universal polarities will default to `??`
+ * - Vieled Riven mods will use their in-game behavior and use `???`
+ * @param {BackerImageProps} props Props used when creating backer image
+ * @returns {Promise<Image>}
+ */
+export const backerImage = async (props: BackerImageProps): Promise<Image> => {
+  const { backer, tier, base, polarity, rank } = props;
+  const canvas = createCanvas(backer.width, backer.height);
   const context = canvas.getContext('2d');
-  const tier = modRarityMap[mod.rarity?.toLocaleLowerCase() ?? 'common'];
-  const surface = await getBackground(tier);
 
-  context.drawImage(surface.background, 0, 0);
-  context.drawImage(surface.lowerTab, 23, 390);
-  if (mod.imageName) {
-    const thumb = `https://cdn.warframestat.us/img/${mod.imageName}`;
-    context.drawImage(await loadImage(thumb), 0, 0, 239, 180, 10, 90, 239, 170);
+  context.drawImage(backer, 0, 0);
+
+  context.font = 'bold 14px "Roboto"';
+  context.fillStyle = textColor(tier);
+
+  const drainHeight = canvas.height * 0.7;
+  if (tier === modRarityMap.riven) {
+    context.fillText('???', canvas.width * 0.4, drainHeight);
+    return loadImage(await canvas.encode('png'));
   }
 
-  context.drawImage(surface.backer, 205, 95);
-  drawText(context, mod.name, modDescription(mod.description, mod.levelStats, rank), mod.compatName, tier);
-
-  if (mod.baseDrain) {
-    context.font = '300 16px "Roboto"';
-
-    let drain = mod.baseDrain;
-    if (drain < 0) {
-      drain = Math.abs(drain);
-      context.fillText(`^${drain + rank}`, 224, 108);
-    } else {
-      context.fillText((drain + rank).toString(), 222, 108);
-    }
-  }
-
-  const polarity = await drawPolarity(tier, mod.polarity);
-  const polaritySize = 16; // It's a square
-  const polarityY = 101;
-
-  const drain = mod.baseDrain;
-  if (drain && drain < 0) {
-    context.drawImage(await loadImage(polarity), 234, polarityY, polaritySize, polaritySize);
-  } else if (drain + rank >= 10) {
-    context.drawImage(await loadImage(polarity), 232, polarityY, polaritySize, polaritySize);
+  if (polarity === 'universal') {
+    // Rivens don't have a universal polarity. The polarity is just random and shows up after it gets unvieled
+    context.fillText('??', canvas.width * 0.6, canvas.height * 0.7);
   } else {
-    context.drawImage(await loadImage(polarity), 230, polarityY, polaritySize, polaritySize);
+    // Draw Polarity into a 16x16 box
+    context.drawImage(await drawPolarity(tier, polarity), canvas.width * 0.6, canvas.height * 0.2, 16, 16);
   }
 
-  return canvas.encode('png');
+  const drain = `${base < 0 ? '+' : ''}${Math.abs(base) + (rank ?? 0)}`;
+  if (drain.length >= 2) {
+    context.fillText(`${drain}`, canvas.width * 0.2, drainHeight);
+  } else {
+    context.fillText(`${drain}`, canvas.width * 0.35, drainHeight);
+  }
+
+  return loadImage(await canvas.encode('png'));
+};
+
+/**
+ * Props used in creating the lower tab
+ */
+interface LowerTabProps {
+  lowerTab: Image;
+  tier: string;
+  compatName?: string;
+}
+
+/**
+ * Creates a lower tab (the part that's positioned under the desciption with compat name)
+ * @param {LowerTabProps} props Props used in creating the lower tab
+ * @returns {Promise<Image>}
+ */
+export const lowerTabImage = async (props: LowerTabProps): Promise<Image> => {
+  const { lowerTab, tier, compatName } = props;
+  const canvas = createCanvas(lowerTab.width, lowerTab.height);
+  const context = canvas.getContext('2d');
+
+  context.drawImage(lowerTab, 0, 0);
+
+  if (compatName) {
+    context.font = '300 16px "Roboto"';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillStyle = textColor(tier);
+
+    context.fillText(compatName, canvas.width * 0.5, canvas.height * 0.5);
+  }
+
+  return loadImage(await canvas.encode('png'));
+};
+
+/**
+ * Props used to create the background image
+ */
+interface BackgroundProps {
+  background: Image;
+  sideLights: Image;
+  backer: Image;
+  lowerTab: Image;
+  bottom: { width: number; height: number };
+  mod: Mod;
+  rank?: number;
+  image?: string;
+}
+
+/**
+ * Draws a mod background complete with thumbnail, text, and sidelights.
+ * @param {BackerImageProps} props Props used in create the background image
+ * @returns {Promise<Image>}
+ */
+export const backgroundImage = async (props: BackgroundProps): Promise<Image> => {
+  const { background, sideLights, backer, lowerTab, bottom, mod, rank, image } = props;
+  const tier = getTier(mod);
+  const canvas = createCanvas(background.width, background.height);
+  const context = canvas.getContext('2d');
+
+  context.drawImage(background, 0, 0);
+
+  if (mod.imageName || image) {
+    const thumb = await loadImage(image ?? `https://cdn.warframestat.us/img/${mod.imageName}`);
+    const thumbWidth = canvas.width - horizantalPad * 2;
+    const thumbHeight = 170;
+
+    context.drawImage(thumb, horizantalPad, canvas.height * 0.17, thumbWidth, thumbHeight);
+  }
+
+  const sideLightsY = background.height * 0.21;
+  const sideLightsLeft = await flip(sideLights);
+
+  context.drawImage(sideLights, canvas.width * 0.93, sideLightsY);
+  context.drawImage(sideLightsLeft, 0, sideLightsY);
+
+  context.drawImage(
+    await backerImage({ backer, tier, base: mod.baseDrain, polarity: mod.polarity, rank }),
+    background.width * 0.8,
+    background.height * 0.2
+  );
+
+  // DE has this sitting right on top of the bottom piece but it bothers me
+  const padding = tier === modRarityMap.riven ? 16 : 8;
+  context.drawImage(
+    await lowerTabImage({ lowerTab, tier, compatName: mod.compatName }),
+    background.width * 0.09,
+    background.height - bottom.height - padding
+  );
+
+  context.fillStyle = textColor(tier);
+
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.font = '400 16px "Roboto"';
+  context.fillText(mod.name, canvas.width * 0.5, canvas.height * 0.55);
+
+  const description = modDescription(mod.description, mod.levelStats, rank ?? 0);
+  if (description && description.length > 0) {
+    const x = canvas.width * 0.5;
+    const lines = description.split('\n');
+
+    context.font = '12px "Roboto"';
+    let start = canvas.height * 0.59;
+
+    lines.forEach((line) => {
+      const maxWidth = background.width * 0.9;
+      const texts = wrapText(context, line, maxWidth);
+      texts.forEach((text) => {
+        context.fillText(text, x, start, maxWidth);
+        start += 15;
+      });
+    });
+  }
+
+  return loadImage(await canvas.encode('png'));
+};
+
+/**
+ * Props used to crete bottom image
+ */
+interface BottomImageProps {
+  bottom: Image;
+  cornerLights: Image;
+  tier: string;
+  max: number;
+  rank?: number;
+}
+/**
+ * Creates the lower frame piece of a mod with inactive/active rank slots up to the `max` rank
+ *
+ * - if no `rank` is given the default is inactive slots up to `max`
+ * - if `rank` equals `max` a `RankCompleteLine` will be drawn across the slots
+ * @param {BottomImageProps} props Props used in the creation of the lower frame
+ * @returns {Promise<Image>}
+ */
+export const bottomImage = async (props: BottomImageProps): Promise<Image> => {
+  const { bottom, cornerLights, tier, max, rank } = props;
+
+  const rankSlotEmpy = await fetchModPiece('RankSlotEmpty.png');
+  const rankCompleted = await fetchModPiece('RankCompleteLine.png');
+  const rankSlotActive = await fetchModPiece('RankSlotActive.png');
+
+  const canvas = createCanvas(bottom.width, bottom.height);
+  const context = canvas.getContext('2d');
+
+  context.drawImage(bottom, 0, 0);
+
+  const cornerLightsLeft = await flip(cornerLights);
+  if (tier === modRarityMap.riven) {
+    const cornerLightsHeight = canvas.height * 0.27;
+
+    context.drawImage(cornerLights, canvas.width * 0.73, cornerLightsHeight);
+    context.drawImage(cornerLightsLeft, canvas.width * 0.04, cornerLightsHeight);
+  } else if (tier === modRarityMap.legendary) {
+    const cornerLightsHeight = canvas.height * 0.32;
+
+    context.drawImage(cornerLights, canvas.width * 0.76, cornerLightsHeight);
+    context.drawImage(cornerLightsLeft, -(canvas.width * 0.01), cornerLightsHeight);
+  } else {
+    const cornerLightsHeight = canvas.height * 0.24;
+
+    context.drawImage(cornerLights, canvas.width * 0.76, cornerLightsHeight);
+    context.drawImage(cornerLightsLeft, -(canvas.width * 0.01), cornerLightsHeight);
+  }
+
+  const isRare = tier === modRarityMap.riven || tier === modRarityMap.legendary;
+  const slotLineHeight = isRare ? canvas.height * 0.84 : canvas.height * 0.74;
+  const slotHeight = isRare ? canvas.height * 0.82 : canvas.height * 0.72;
+
+  // At the time of writing I saw /Lotus/Upgrades/Mods/Randomized/LotusArchgunRandomModRare with a fusionLimit of 32756
+  const maxRank = max > 10 ? 10 : max;
+  if (rank === maxRank) context.drawImage(rankCompleted, 0, slotLineHeight);
+
+  let rankSlotStart = canvas.width * 0.29;
+  if (maxRank <= 3) rankSlotStart = canvas.width * 0.43;
+  if (maxRank <= 5 && maxRank >= 4) rankSlotStart = canvas.width * 0.39;
+
+  for (let i = 0; i < maxRank; i += 1) {
+    const slot = i < (rank ?? 0) ? rankSlotActive : rankSlotEmpy;
+    context.drawImage(slot, rankSlotStart, slotHeight);
+    rankSlotStart += 11;
+  }
+
+  return loadImage(await canvas.encode('png'));
 };
