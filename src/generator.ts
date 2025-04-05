@@ -21,6 +21,7 @@ import {
  *  - gold
  *  - primed
  *  - rivens
+ *  - mod sets
  *
  * None supported mod types will default to using common as it's frame
  *
@@ -29,6 +30,7 @@ import {
  * @param {Mod} mod The Mod to build the image on
  * @param {CanvasOutput} output The image format to export as (png, webp, avif, jpeg)
  * @param {number | undefined} rank The rank the mod would be at. Can be empty to show unranked
+ * @param {number | undefined} setBonus The set bonus in a mod set
  * @param {string | undefined} image Optional thumbnail to show instead of the mod default thumbnail (Good for memes)
  * @returns {Promise<Buffer<ArrayBufferLike> | undefined>}
  */
@@ -36,6 +38,7 @@ const generate = async (
   mod: Mod,
   output: CanvasOutput = { format: 'png' },
   rank?: number,
+  setBonus?: number,
   image?: string
 ): Promise<Buffer<ArrayBufferLike> | undefined> => {
   // All values here should be percentages based on the background size and NOT on the canvas size.
@@ -63,16 +66,30 @@ const generate = async (
     bottom: { width: bottom.width, height: bottom.height },
     mod,
     rank,
+    setBonus,
     image,
   });
   context.drawImage(backgroundGen, centerX, centerY);
 
+  const topFrameHeight = background.height * 0.14;
   if (top.width > background.width) {
     const newXPadding = horizontalPad * 6;
     const widthDiff = top.width - background.width - newXPadding;
-    context.drawImage(top, -widthDiff / 2, background.height * 0.14);
+    context.drawImage(top, -widthDiff / 2, topFrameHeight);
   } else {
-    context.drawImage(top, centerX, background.height * 0.14);
+    context.drawImage(top, centerX, topFrameHeight);
+  }
+
+  if (mod.modSet) {
+    const header = await setHeader(mod.uniqueName);
+
+    context.drawImage(
+      await drawHeader(header, tier),
+      background.width * 0.3,
+      background.height * 0.13,
+      header.width * 0.8,
+      header.height * 0.8
+    );
   }
 
   if (bottom.width > background.width) {

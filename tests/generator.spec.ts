@@ -21,18 +21,20 @@ describe('Generate a mod', () => {
       '/Lotus/Upgrades/Mods/Randomized/LotusArchgunRandomModRare',
       '/Lotus/Powersuits/Dragon/DragonBreathAugmentCard',
       '/Lotus/Upgrades/Mods/Warframe/Expert/AvatarPowerMaxModExpert',
+      '/Lotus/Upgrades/Mods/Sets/Augur/WarframeAugurMessageMod',
     ];
 
     const testPath = join('.', 'assets', 'tests');
     if (!existsSync(testPath)) mkdirSync(testPath, { recursive: true });
 
-    for (let i = 0; i < mods.length; i += 1) {
+    for (let i = 0; i <= mods.length; i += 1) {
       await Promise.all(
         formats.map(async (format) => {
           const imagePath = join(testPath, format);
           if (!existsSync(imagePath)) mkdirSync(imagePath, { recursive: true });
 
           const mod = find.findItem(mods[i]) as Mod;
+
           if (!mod) return;
           const modCanvas = await generate(mod, { format }, mod.fusionLimit);
           assert.ok(modCanvas);

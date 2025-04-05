@@ -14,18 +14,6 @@ import type { LevelStat, Mod } from 'warframe-items';
 
 const assetPath = join('.', 'genesis-assets');
 
-type RarityType = {
-  [key: string]: string;
-};
-
-export const modRarityMap: RarityType = {
-  common: 'Bronze',
-  uncommon: 'Silver',
-  rare: 'Gold',
-  legendary: 'Legendary',
-  riven: 'Omega',
-};
-
 export const getTier = (mod: Mod) => {
   if (mod.type.includes('Riven')) return modRarityMap.riven;
   if (mod.name.includes('Archon')) return modRarityMap.rare;
@@ -99,9 +87,9 @@ export const fetchPolarity = async (polarity: string): Promise<Image> => {
 };
 
 export const modDescription = (
-  description: string | undefined,
-  levelStats: LevelStat[] | undefined,
-  rank: number
+  rank: number = 0,
+  description?: string | undefined,
+  levelStats?: LevelStat[] | undefined
 ): string | undefined => {
   if (description && description.length !== 0) return description;
 
@@ -145,17 +133,6 @@ export const registerFonts = () => {
   GlobalFonts.registerFromPath(join(fontPath, 'Roboto-Bold.ttf'), 'Roboto');
 };
 
-type TierColor = {
-  [key: string]: string;
-};
-
-export const tierColor: TierColor = {
-  Bronze: '#CA9A87',
-  Silver: '#FFFFFF',
-  Gold: '#FAE7BE',
-  Omega: '#AC83D5',
-};
-
 export const textColor = (tier: string) => {
   if (tier === 'Legendary') return tierColor.Silver;
 
@@ -181,9 +158,9 @@ export const exportCanvas = async (canvas: Canvas, output: CanvasOutput = { form
       case 'png':
         return await canvas.encode('png');
       case 'webp':
-        return await canvas.encode('webp', output.quality);
+        return await canvas.encode('webp', quality || 100);
       case 'jpeg':
-        return await canvas.encode('jpeg', output.quality);
+        return await canvas.encode('jpeg', quality || 100);
       case 'avif':
         return await canvas.encode('avif', output.cfg ?? { quality: 0 });
     }

@@ -33,6 +33,35 @@ const drawPolarity = async (tier: string, polarity: string): Promise<Canvas> => 
   return canvas;
 };
 
+export const drawHeader = async (image: Image, tier: string): Promise<Image> => {
+  const canvas = createCanvas(image.width, image.height);
+  const context = canvas.getContext('2d');
+
+  context.drawImage(image, 0, 0);
+
+  const { data } = context.getImageData(0, 0, image.width, image.height);
+  const color = hexToRgb(textColor(tier));
+
+  for (let i = 0; i < data.length; i += 4) {
+    const alpha = data[i + 3];
+    if (alpha > 0) {
+      const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3 / 255;
+
+      // Adjust these values to control darkness
+      const originalWeight = 0.2;
+      const tintWeight = 0.8;
+
+      data[i] = Math.min(255, data[i] * originalWeight + color.r * brightness * tintWeight);
+      data[i + 1] = Math.min(255, data[i + 1] * originalWeight + color.g * brightness * tintWeight);
+      data[i + 2] = Math.min(255, data[i + 2] * originalWeight + color.b * brightness * tintWeight);
+    }
+  }
+
+  context.putImageData(new ImageData(data, image.width, image.height), 0, 0);
+
+  return loadImage(await canvas.encode('png'));
+};
+
 /**
  * Props used in creating the image of a backer
  */
@@ -132,6 +161,7 @@ interface BackgroundProps {
   bottom: { width: number; height: number };
   mod: Mod;
   rank?: number;
+  setBonus?: number;
   image?: string;
 }
 
