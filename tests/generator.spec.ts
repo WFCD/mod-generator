@@ -36,7 +36,7 @@ describe('Generate a mod', () => {
           const mod = find.findItem(mods[i]) as Mod;
 
           if (!mod) return;
-          const modCanvas = await generate(mod, { format: format as Format }, mod.fusionLimit);
+          const modCanvas = await generate({ mod, rank: mod.fusionLimit, output: { format: format as Format } });
           assert.ok(modCanvas);
 
           if (modCanvas) await writeFile(join(imagePath, `${mod.name}.${format}`), modCanvas);
