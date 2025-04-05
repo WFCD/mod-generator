@@ -1,19 +1,11 @@
-import { Image, createCanvas, loadImage } from '@napi-rs/canvas';
-import { Mod } from 'warframe-items';
+import { Image, ImageData, createCanvas, loadImage } from '@napi-rs/canvas';
+import Items, { Mod, ModSet } from 'warframe-items';
 
-import {
-  fetchPolarity,
-  fetchModPiece,
-  textColor,
-  wrapText,
-  modRarityMap,
-  modDescription,
-  flip,
-  getTier,
-} from './utils.js';
+import { fetchPolarity, fetchModPiece, textColor, wrapText, modDescription, flip, getTier, hexToRgb } from './utils.js';
+import { modRarityMap } from './data.js';
 
 export const verticalPad = 70;
-export const horizantalPad = 7;
+export const horizontalPad = 7;
 
 const drawPolarity = async (tier: string, polarity: string): Promise<Image> => {
   const image = await fetchPolarity(polarity);
@@ -28,6 +20,35 @@ const drawPolarity = async (tier: string, polarity: string): Promise<Image> => {
 
   context.fillStyle = textColor(tier);
   context.fillRect(0, 0, size, size);
+
+  return loadImage(await canvas.encode('png'));
+};
+
+export const drawHeader = async (image: Image, tier: string): Promise<Image> => {
+  const canvas = createCanvas(image.width, image.height);
+  const context = canvas.getContext('2d');
+
+  context.drawImage(image, 0, 0);
+
+  const { data } = context.getImageData(0, 0, image.width, image.height);
+  const color = hexToRgb(textColor(tier));
+
+  for (let i = 0; i < data.length; i += 4) {
+    const alpha = data[i + 3];
+    if (alpha > 0) {
+      const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3 / 255;
+
+      // Adjust these values to control darkness
+      const originalWeight = 0.2;
+      const tintWeight = 0.8;
+
+      data[i] = Math.min(255, data[i] * originalWeight + color.r * brightness * tintWeight);
+      data[i + 1] = Math.min(255, data[i + 1] * originalWeight + color.g * brightness * tintWeight);
+      data[i + 2] = Math.min(255, data[i + 2] * originalWeight + color.b * brightness * tintWeight);
+    }
+  }
+
+  context.putImageData(new ImageData(data, image.width, image.height), 0, 0);
 
   return loadImage(await canvas.encode('png'));
 };
@@ -131,6 +152,7 @@ interface BackgroundProps {
   bottom: { width: number; height: number };
   mod: Mod;
   rank?: number;
+  setBonus?: number;
   image?: string;
 }
 
@@ -140,7 +162,7 @@ interface BackgroundProps {
  * @returns {Promise<Image>}
  */
 export const backgroundImage = async (props: BackgroundProps): Promise<Image> => {
-  const { background, sideLights, backer, lowerTab, bottom, mod, rank, image } = props;
+  const { background, sideLights, backer, lowerTab, bottom, mod, rank, setBonus, image } = props;
   const tier = getTier(mod);
   const canvas = createCanvas(background.width, background.height);
   const context = canvas.getContext('2d');
@@ -149,10 +171,10 @@ export const backgroundImage = async (props: BackgroundProps): Promise<Image> =>
 
   if (mod.imageName || image) {
     const thumb = await loadImage(image ?? `https://cdn.warframestat.us/img/${mod.imageName}`);
-    const thumbWidth = canvas.width - horizantalPad * 2;
+    const thumbWidth = canvas.width - horizontalPad * 2;
     const thumbHeight = 170;
 
-    context.drawImage(thumb, horizantalPad, canvas.height * 0.17, thumbWidth, thumbHeight);
+    context.drawImage(thumb, horizontalPad, canvas.height * 0.17, thumbWidth, thumbHeight);
   }
 
   const sideLightsY = background.height * 0.21;
@@ -176,25 +198,59 @@ export const backgroundImage = async (props: BackgroundProps): Promise<Image> =>
   );
 
   context.fillStyle = textColor(tier);
+  context.strokeStyle = textColor(tier);
 
   context.textAlign = 'center';
   context.textBaseline = 'middle';
   context.font = '400 16px "Roboto"';
   context.fillText(mod.name, canvas.width * 0.5, canvas.height * 0.55);
 
-  const description = modDescription(mod.description, mod.levelStats, rank ?? 0);
+  const textHeight = canvas.width * 0.5;
+  const maxWidth = background.width * 0.9;
+  const description = modDescription(rank ?? 0, mod.description, mod.levelStats);
+
+  let start = canvas.height * 0.59;
   if (description && description.length > 0) {
-    const x = canvas.width * 0.5;
     const lines = description.split('\n');
 
     context.font = '12px "Roboto"';
-    let start = canvas.height * 0.59;
 
     lines.forEach((line) => {
-      const maxWidth = background.width * 0.9;
       const texts = wrapText(context, line, maxWidth);
       texts.forEach((text) => {
-        context.fillText(text, x, start, maxWidth);
+        context.fillText(text, textHeight, start, maxWidth);
+        start += 15;
+      });
+    });
+  }
+
+  if (mod.modSet) {
+    const items = new Items({ category: ['Mods'] });
+    const set = items.find((i) => i.uniqueName === mod.modSet) as ModSet;
+    const recWidth = 25;
+    const recHeight = 10;
+
+    let startX = canvas.width * 0.16;
+    for (let i = 0; i <= set.stats.length; i += 1) {
+      const coord = { x: startX, y: start - recHeight - horizontalPad };
+
+      context.strokeRect(coord.x, coord.y, recWidth, recHeight);
+
+      if (setBonus && setBonus >= i) {
+        context.fillRect(coord.x, coord.y, recWidth, recHeight);
+      }
+
+      startX += recWidth;
+    }
+
+    // Add the previous so that the mod set stat isn't ontop of the bonus count
+    start += recHeight;
+    const stat = setBonus ? setBonus - 1 : 0;
+    const lines = modDescription(undefined, set.stats[stat])?.split('\n');
+    lines?.forEach((l) => {
+      const texts = wrapText(context, l, maxWidth);
+      texts.forEach((text) => {
+        context.fillText(text, textHeight, start, maxWidth);
         start += 15;
       });
     });

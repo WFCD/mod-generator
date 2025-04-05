@@ -5,19 +5,9 @@ import { readFile, mkdir, writeFile } from 'fs/promises';
 import { AvifConfig, Canvas, GlobalFonts, Image, SKRSContext2D, createCanvas, loadImage } from '@napi-rs/canvas';
 import { LevelStat, Mod } from 'warframe-items';
 
+import { modRarityMap, tierColor } from './data.js';
+
 const assetPath = join('.', 'assets', 'modFrames');
-
-type RarityType = {
-  [key: string]: string;
-};
-
-export const modRarityMap: RarityType = {
-  common: 'Bronze',
-  uncommon: 'Silver',
-  rare: 'Gold',
-  legendary: 'Legendary',
-  riven: 'Omega',
-};
 
 export const getTier = (mod: Mod) => {
   if (mod.type.includes('Riven')) return modRarityMap.riven;
@@ -119,9 +109,9 @@ export const fetchPolarity = async (polarity: string): Promise<Image> => {
 };
 
 export const modDescription = (
-  description: string | undefined,
-  levelStats: LevelStat[] | undefined,
-  rank: number
+  rank: number = 0,
+  description?: string | undefined,
+  levelStats?: LevelStat[] | undefined
 ): string | undefined => {
   if (description && description.length !== 0) return description;
 
@@ -165,17 +155,6 @@ export const registerFonts = () => {
   GlobalFonts.registerFromPath(join(fontPath, 'Roboto-Bold.ttf'), 'Roboto');
 };
 
-type TierColor = {
-  [key: string]: string;
-};
-
-export const tierColor: TierColor = {
-  Bronze: '#CA9A87',
-  Silver: '#FFFFFF',
-  Gold: '#FAE7BE',
-  Omega: '#AC83D5',
-};
-
 export const textColor = (tier: string) => {
   if (tier === 'Legendary') return tierColor.Silver;
 
@@ -201,13 +180,26 @@ export const exportCanvas = async (canvas: Canvas, output: CanvasOutput = { form
       case 'png':
         return await canvas.encode('png');
       case 'webp':
-        return await canvas.encode('webp', output.quality);
+        return await canvas.encode('webp', quality || 100);
       case 'jpeg':
-        return await canvas.encode('jpeg', output.quality);
+        return await canvas.encode('jpeg', quality || 100);
       case 'avif':
-        return await canvas.encode('avif', output.cfg);
+        return await canvas.encode('avif', output.cfg || { quality: 100, alphaQuality: 100 });
     }
   } catch {
     throw Error(`failed to export canvas as ${output.format}`);
   }
+};
+
+export const setHeader = async (uniqueName: string) => {
+  const name = uniqueName.split('/').reverse()[1];
+
+  return fetchModPiece(`${name}Header.png`);
+};
+
+export const hexToRgb = (hex: string) => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) }
+    : { r: 0, g: 0, b: 0 };
 };
