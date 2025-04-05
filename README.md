@@ -28,7 +28,7 @@ import { ProfileParser } from 'profile-parser';
 import { find } from 'warframe-items/utilities';
 
 const mod = find.findItem('/Lotus/Powersuits/Dragon/DragonBreathAugmentCard');
-const image = generateBasicMod({mod, rank: 3}); // You can set rank to whatever rank you want by defualt it's 0
+const image = generate({mod, rank: 3}); // You can set rank to whatever rank you want by default it's 0
 
 writeFileSync('directory/image.png', image);
 ```
