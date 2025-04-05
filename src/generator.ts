@@ -12,6 +12,13 @@ import {
   registerFonts,
 } from './utils.js';
 
+interface GenerateModProps {
+  mod: Mod;
+  rank?: number;
+  setBonus?: number;
+  image?: string;
+  output?: CanvasOutput;
+}
 /**
  * Generates a complete mod image
  *
@@ -27,23 +34,14 @@ import {
  *
  * Notes:
  *  - Archon mods will use the gold mod frame
- * @param {Mod} mod The Mod to build the image on
- * @param {CanvasOutput} output The image format to export as (png, webp, avif, jpeg)
- * @param {number | undefined} rank The rank the mod would be at. Can be empty to show unranked
- * @param {number | undefined} setBonus The set bonus in a mod set
- * @param {string | undefined} image Optional thumbnail to show instead of the mod default thumbnail (Good for memes)
+ * @param {GenerateModProps} props Properties to use when creating mod image
  * @returns {Promise<Buffer<ArrayBufferLike> | undefined>}
  */
-const generate = async (
-  mod: Mod,
-  output: CanvasOutput = { format: 'png' },
-  rank?: number,
-  setBonus?: number,
-  image?: string
-): Promise<Buffer<ArrayBufferLike> | undefined> => {
+const generate = async (props: GenerateModProps): Promise<Buffer<ArrayBufferLike> | undefined> => {
   // All values here should be percentages based on the background size and NOT on the canvas size.
   // The reason for this is that special mod pieces have a bigger width then the base 256 width of the background,
   // so the canvas has to be big enough to keep those parts in view.
+  const { mod, output, rank, setBonus, image } = props;
   const tier = getTier(mod);
   const isRiven = tier === modRarityMap.riven;
 
@@ -125,7 +123,7 @@ const generate = async (
 
   outterContext.drawImage(canvas, (outterCanvas.width - canvas.width) / 2, (outterCanvas.height - canvas.height) / 2);
 
-  return exportCanvas(outterCanvas, output);
+  return exportCanvas(outterCanvas, output ?? { format: 'png' });
 };
 
 export default generate;
