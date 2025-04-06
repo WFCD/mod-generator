@@ -13,7 +13,7 @@ import {
 } from './utils.js';
 
 export const verticalPad = 70;
-export const horizantalPad = 7;
+export const horizantalPad = 8;
 
 const drawPolarity = async (tier: string, polarity: string): Promise<Image> => {
   const image = await fetchPolarity(polarity);
@@ -147,12 +147,43 @@ export const backgroundImage = async (props: BackgroundProps): Promise<Image> =>
 
   context.drawImage(background, 0, 0);
 
+  const maxWidth = background.width * 0.9;
+  const description = modDescription(mod.description, mod.levelStats, rank ?? 0);
+  const lines = description?.split('\n');
+  const modTextHeight = textHeight(context, maxWidth, mod.name, lines);
+
+  let imagePosttion = canvas.height * 0.17;
   if (mod.imageName || image) {
     const thumb = await loadImage(image ?? `https://cdn.warframestat.us/img/${mod.imageName}`);
     const thumbWidth = canvas.width - horizantalPad * 2;
-    const thumbHeight = 170;
+    const thumbHeight = thumb.height - modTextHeight;
 
-    context.drawImage(thumb, horizantalPad, canvas.height * 0.17, thumbWidth, thumbHeight);
+    context.drawImage(thumb, horizantalPad, imagePosttion, thumbWidth, thumbHeight);
+
+    imagePosttion += thumbHeight;
+  }
+
+  context.fillStyle = textColor(tier);
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.font = '400 16px "Roboto"';
+  context.fillText(mod.name, canvas.width * 0.5, imagePosttion + horizantalPad * 2);
+
+  imagePosttion += horizantalPad * 2;
+  if (description && description.length > 0) {
+    const x = canvas.width * 0.5;
+
+    context.font = '12px "Roboto"';
+    const lineSpacing = 15;
+    let start = imagePosttion + horizantalPad * 2;
+
+    lines?.forEach((line) => {
+      const texts = wrapText(context, line, maxWidth);
+      texts.forEach((text) => {
+        context.fillText(text, x, start, maxWidth);
+        start += lineSpacing;
+      });
+    });
   }
 
   const sideLightsY = background.height * 0.21;
