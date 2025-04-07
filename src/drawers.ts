@@ -152,30 +152,31 @@ export const backgroundImage = async (props: BackgroundProps): Promise<Image> =>
   const lines = description?.split('\n');
   const modTextHeight = textHeight(context, maxWidth, mod.name, lines);
 
-  let imagePosttion = canvas.height * 0.17;
+  // Track Y after image is drawn to know where to start drawing the text
+  let posttion = canvas.height * 0.17;
   if (mod.imageName || image) {
     const thumb = await loadImage(image ?? `https://cdn.warframestat.us/img/${mod.imageName}`);
     const thumbWidth = canvas.width - horizantalPad * 2;
     const thumbHeight = thumb.height - modTextHeight;
 
-    context.drawImage(thumb, horizantalPad, imagePosttion, thumbWidth, thumbHeight);
+    context.drawImage(thumb, horizantalPad, posttion, thumbWidth, thumbHeight);
 
-    imagePosttion += thumbHeight;
+    posttion += thumbHeight;
   }
 
   context.fillStyle = textColor(tier);
   context.textAlign = 'center';
   context.textBaseline = 'middle';
   context.font = '400 16px "Roboto"';
-  context.fillText(mod.name, canvas.width * 0.5, imagePosttion + horizantalPad * 2);
+  context.fillText(mod.name, canvas.width * 0.5, posttion + horizantalPad * 2);
 
-  imagePosttion += horizantalPad * 2;
+  posttion += horizantalPad * 2;
   if (description && description.length > 0) {
     const x = canvas.width * 0.5;
 
     context.font = '12px "Roboto"';
     const lineSpacing = 15;
-    let start = imagePosttion + horizantalPad * 2;
+    let start = posttion + horizantalPad * 2;
 
     lines?.forEach((line) => {
       const texts = wrapText(context, line, maxWidth);
