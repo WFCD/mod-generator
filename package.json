@@ -21,7 +21,7 @@
     "@commitlint/cli": "^19.8.0",
     "@commitlint/config-conventional": "^19.8.0",
     "@commitlint/types": "^19.5.0",
-    "@types/chai": "^5.0.1",
+    "@types/chai": "^5.2.2",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.13.14",
     "@wfcd/eslint-config": "^1.6.3",
