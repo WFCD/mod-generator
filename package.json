@@ -31,7 +31,7 @@
     "cross-env": "^7.0.3",
     "husky": "^9.1.7",
     "install-peerdeps": "^3.0.6",
-    "lint-staged": "^15.5.0",
+    "lint-staged": "^16.0.0",
     "mocha": "^11.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
