@@ -148,9 +148,11 @@ export const backgroundImage = async (props: BackgroundProps): Promise<Image> =>
 
   context.drawImage(background, 0, 0);
 
-  const maxWidth = background.width * 0.9;
+  const maxWidth = background.width * 0.8;
   const description = modDescription(mod.description, mod.levelStats, rank ?? 0);
   const lines = description?.split('\n');
+
+  context.font = '12px "Roboto"';
   const modTextHeight = textHeight(context, maxWidth, mod.name, lines);
 
   // Track Y after image is drawn to know where to start drawing the text
