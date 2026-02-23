@@ -1,7 +1,7 @@
 import { createCanvas } from '@napi-rs/canvas';
 import type { Mod } from 'warframe-items';
 
-import { backgroundImage, bottomImage, horizantalPad, verticalPad } from './drawers.js';
+import { backgroundImage, bottomImage, horizantalPad } from './drawers.js';
 import {
   type CanvasOutput,
   exportCanvas,
@@ -76,7 +76,7 @@ const generate = async (
   }
 
   if (bottom.width > background.width) {
-    const newXPadding = horizantalPad * 6;
+    const newXPadding = horizantalPad * 5;
     const widthDiff = bottom.width - background.width - newXPadding;
     context.drawImage(
       await bottomImage({
@@ -103,7 +103,7 @@ const generate = async (
     );
   }
 
-  const outterCanvas = createCanvas(isRiven ? 292 : 256, 512 - verticalPad);
+  const outterCanvas = createCanvas(isRiven ? 292 : 256, 360);
   const outterContext = outterCanvas.getContext('2d');
 
   outterContext.drawImage(canvas, (outterCanvas.width - canvas.width) / 2, (outterCanvas.height - canvas.height) / 2);
