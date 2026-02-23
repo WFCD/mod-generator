@@ -5,8 +5,15 @@
   "description": "",
   "author": "SlayerOrnstein",
   "type": "module",
+  "main": "./dist/generator.mjs",
+  "types": "./dist/generator.d.mjs",
+  "files": [
+    "dist/",
+    "LICENSE"
+  ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsdown",
+    "build:docs": "typedoc",
     "lint": "biome check",
     "lint:fix": "biome check --write",
     "test": "c8 mocha tests/*.spec.ts",
@@ -15,7 +22,7 @@
   "license": "MIT",
   "dependencies": {
     "@napi-rs/canvas": "^0.1.94",
-    "warframe-items": "^1.1269.19"
+    "warframe-items": "^1.1269.87"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.4",
@@ -35,7 +42,9 @@
     "lint-staged": "^16.1.2",
     "mocha": "^11.7.1",
     "prettier": "3.8.1",
+    "tsdown": "^0.20.3",
     "tsx": "4.21.0",
+    "typedoc": "^0.28.17",
     "typescript": "^5.7.3"
   },
   "engines": {
@@ -66,6 +75,6 @@
     "skip-full": true
   },
   "peerDependencies": {
-    "warframe-items": "^1.1269.19"
+    "warframe-items": "^1.1269.87"
   }
 }
