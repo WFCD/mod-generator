@@ -6,7 +6,7 @@
   "author": "SlayerOrnstein",
   "type": "module",
   "main": "./dist/generator.mjs",
-  "types": "./dist/generator.d.mjs",
+  "types": "./dist/generator.d.mts",
   "files": [
     "dist/",
     "LICENSE"
@@ -17,7 +17,7 @@
     "lint": "biome check",
     "lint:fix": "biome check --write",
     "test": "c8 mocha tests/*.spec.ts",
-    "prepare": "husky && npx install-peerdeps -S @wfcd/eslint-config@latest"
+    "prepare": "husky"
   },
   "license": "MIT",
   "dependencies": {
@@ -38,7 +38,6 @@
     "coveralls": "^3.1.1",
     "cross-env": "^7.0.3",
     "husky": "^9.1.7",
-    "install-peerdeps": "^3.0.6",
     "lint-staged": "^16.1.2",
     "mocha": "^11.7.1",
     "tsdown": "^0.20.3",
