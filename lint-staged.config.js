@@ -1,7 +1,6 @@
 export default {
   "*.ts": [
-    "eslint --cache --fix",
-    "prettier --write",
+    "biome check --write",
     () => "tsc -p tsconfig.json --noEmit",
     () => "npm test"
   ],

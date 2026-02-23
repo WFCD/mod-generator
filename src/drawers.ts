@@ -1,15 +1,15 @@
-import { Image, createCanvas, loadImage } from '@napi-rs/canvas';
-import { Mod } from 'warframe-items';
+import { createCanvas, type Image, loadImage } from '@napi-rs/canvas';
+import type { Mod } from 'warframe-items';
 
 import {
-  fetchPolarity,
   fetchModPiece,
-  textColor,
-  wrapText,
-  modRarityMap,
-  modDescription,
+  fetchPolarity,
   flip,
   getTier,
+  modDescription,
+  modRarityMap,
+  textColor,
+  wrapText,
 } from './utils.js';
 
 export const verticalPad = 70;
@@ -162,7 +162,13 @@ export const backgroundImage = async (props: BackgroundProps): Promise<Image> =>
   context.drawImage(sideLightsLeft, 0, sideLightsY);
 
   context.drawImage(
-    await backerImage({ backer, tier, base: mod.baseDrain, polarity: mod.polarity, rank }),
+    await backerImage({
+      backer,
+      tier,
+      base: mod.baseDrain,
+      polarity: mod.polarity,
+      rank,
+    }),
     background.width * 0.8,
     background.height * 0.2
   );
@@ -180,7 +186,8 @@ export const backgroundImage = async (props: BackgroundProps): Promise<Image> =>
   context.textAlign = 'center';
   context.textBaseline = 'middle';
   context.font = '400 16px "Roboto"';
-  context.fillText(mod.name, canvas.width * 0.5, canvas.height * 0.55);
+
+  context.fillText(mod.name, canvas.width * 0.5, canvas.height * 0.52);
 
   const description = modDescription(mod.description, mod.levelStats, rank ?? 0);
   if (description && description.length > 0) {
@@ -188,10 +195,10 @@ export const backgroundImage = async (props: BackgroundProps): Promise<Image> =>
     const lines = description.split('\n');
 
     context.font = '12px "Roboto"';
-    let start = canvas.height * 0.59;
+    let start = canvas.height * 0.56;
 
     lines.forEach((line) => {
-      const maxWidth = background.width * 0.9;
+      const maxWidth = background.width * 0.8;
       const texts = wrapText(context, line, maxWidth);
       texts.forEach((text) => {
         context.fillText(text, x, start, maxWidth);

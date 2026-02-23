@@ -1,13 +1,20 @@
 {
   "exclude": [
-    "node_modules"
+    "node_modules",
   ],
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "resolvePackageJsonExports": true,
-    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "target": "es2024", // set to the *lowest* target you support
     "strict": true,
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "baseUrl": "./",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
   }
 }

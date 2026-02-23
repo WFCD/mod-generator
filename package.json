@@ -5,39 +5,48 @@
   "description": "",
   "author": "SlayerOrnstein",
   "type": "module",
+  "main": "./dist/generator.mjs",
+  "types": "./dist/generator.d.mts",
+  "files": [
+    "dist/",
+    "LICENSE"
+  ],
   "scripts": {
-    "build": "tsc",
-    "lint": "eslint src/",
-    "lint:fix": "eslint src/ tests/ --fix",
+    "build": "tsdown",
+    "build:docs": "typedoc",
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
     "test": "c8 mocha tests/*.spec.ts",
-    "prepare": "husky && npx install-peerdeps -S @wfcd/eslint-config@latest"
+    "prepare": "husky"
   },
   "license": "MIT",
   "dependencies": {
-    "@napi-rs/canvas": "^0.1.73",
-    "warframe-items": "^1.1269.19"
+    "@napi-rs/canvas": "^0.1.94",
+    "warframe-items": "^1.1269.87"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.8.0",
-    "@commitlint/config-conventional": "^19.8.0",
-    "@commitlint/types": "^19.5.0",
-    "@types/chai": "^5.0.1",
+    "@biomejs/biome": "2.4.4",
+    "@commitlint/cli": "^20.4.2",
+    "@commitlint/config-conventional": "^20.4.2",
+    "@commitlint/types": "^20.4.0",
+    "@types/chai": "^5.2.3",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^24.0.6",
-    "@wfcd/eslint-config": "^1.6.3",
+    "@types/node": "^25.3.0",
+    "@wfcd/eslint-config": "^1.6.4",
     "c8": "^10.1.3",
-    "chai": "^5.1.2",
+    "chai": "^6.2.2",
     "coveralls": "^3.1.1",
-    "cross-env": "^7.0.3",
+    "cross-env": "^10.1.0",
     "husky": "^9.1.7",
-    "install-peerdeps": "^3.0.6",
-    "lint-staged": "^16.1.2",
-    "mocha": "^11.7.1",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.7.3"
+    "lint-staged": "^16.2.7",
+    "mocha": "^11.7.5",
+    "tsdown": "^0.20.3",
+    "tsx": "4.21.0",
+    "typedoc": "^0.28.17",
+    "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "babel": {
     "presets": [
@@ -48,11 +57,12 @@
       "@babel/plugin-transform-private-methods"
     ]
   },
-  "prettier": "@wfcd/eslint-config/prettier",
   "mocha": {
-    "loader": "ts-node/esm",
-    "timeout": 15000,
-    "exit": true
+    "timeout": 20000,
+    "exit": true,
+    "node-option": [
+      "import=tsx"
+    ]
   },
   "c8": {
     "reporter": [
@@ -62,6 +72,6 @@
     "skip-full": true
   },
   "peerDependencies": {
-    "warframe-items": "^1.1269.19"
+    "warframe-items": "^1.1269.87"
   }
 }
