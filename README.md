@@ -25,11 +25,10 @@ $ npm i -S mod-generator
 ## Example usage
 
 ```javascript
-import { ProfileParser } from 'profile-parser';
 import { find } from 'warframe-items/utilities';
 
 const mod = find.findItem('/Lotus/Powersuits/Dragon/DragonBreathAugmentCard');
-const image = generateBasicMod(mod, 3); // You can set rank to whatever rank you want by defualt it's 0
+const image = generate(mod, 3); // You can set rank to whatever rank you want by defualt it's 0
 
 writeFileSync('directory/image.png', image);
 ```
