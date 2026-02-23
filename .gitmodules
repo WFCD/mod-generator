@@ -1,0 +1,3 @@
+[submodule "genesis-assets"]
+	path = genesis-assets
+	url = https://github.com/WFCD/genesis-assets.git
