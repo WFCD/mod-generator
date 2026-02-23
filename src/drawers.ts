@@ -1,15 +1,15 @@
-import { Image, createCanvas, loadImage } from '@napi-rs/canvas';
-import { Mod } from 'warframe-items';
+import { createCanvas, type Image, loadImage } from '@napi-rs/canvas';
+import type { Mod } from 'warframe-items';
 
 import {
-  fetchPolarity,
   fetchModPiece,
-  textColor,
-  wrapText,
-  modRarityMap,
-  modDescription,
+  fetchPolarity,
   flip,
   getTier,
+  modDescription,
+  modRarityMap,
+  textColor,
+  wrapText,
 } from './utils.js';
 
 export const verticalPad = 70;

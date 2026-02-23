@@ -1,8 +1,16 @@
 import { createCanvas } from '@napi-rs/canvas';
-import { Mod } from 'warframe-items';
+import type { Mod } from 'warframe-items';
 
 import { backgroundImage, bottomImage, horizantalPad, verticalPad } from './drawers.js';
-import { CanvasOutput, exportCanvas, getBackground, getFrame, getTier, modRarityMap, registerFonts } from './utils.js';
+import {
+  type CanvasOutput,
+  exportCanvas,
+  getBackground,
+  getFrame,
+  getTier,
+  modRarityMap,
+  registerFonts,
+} from './utils.js';
 
 /**
  * Generates a complete mod image

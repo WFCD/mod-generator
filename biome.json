@@ -3,7 +3,7 @@
   "vcs": { "enabled": false, "clientKind": "git", "useIgnoreFile": false },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["test/**/*.ts", "lib/**/*.ts"]
+    "includes": ["test/**/*.ts", "src/**/*.ts"]
   },
   "formatter": {
     "enabled": true,
@@ -26,7 +26,7 @@
       "style": { "noNonNullAssertion": "off", "useImportType": "on" },
       "suspicious": { "noExplicitAny": "warn" }
     },
-    "includes": ["**", "!.github/**", "!docs/**", "!data/**"],
+    "includes": ["**", "!.github/**", "!docs/**"],
     "domains": { "test": "recommended" }
   },
   "javascript": {

@@ -1,8 +1,16 @@
-import { join } from 'path';
-import { readFile } from 'fs/promises';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
-import { AvifConfig, Canvas, GlobalFonts, Image, SKRSContext2D, createCanvas, loadImage } from '@napi-rs/canvas';
-import { LevelStat, Mod } from 'warframe-items';
+import {
+  type AvifConfig,
+  type Canvas,
+  createCanvas,
+  GlobalFonts,
+  type Image,
+  loadImage,
+  type SKRSContext2D,
+} from '@napi-rs/canvas';
+import type { LevelStat, Mod } from 'warframe-items';
 
 const assetPath = join('.', 'genesis-assets');
 
