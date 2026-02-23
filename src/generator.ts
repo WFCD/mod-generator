@@ -79,13 +79,25 @@ const generate = async (
     const newXPadding = horizantalPad * 6;
     const widthDiff = bottom.width - background.width - newXPadding;
     context.drawImage(
-      await bottomImage({ bottom, cornerLights, tier, max: mod.fusionLimit, rank }),
+      await bottomImage({
+        bottom,
+        cornerLights,
+        tier,
+        max: mod.fusionLimit,
+        rank,
+      }),
       -widthDiff / 2,
       background.height * 0.65
     );
   } else {
     context.drawImage(
-      await bottomImage({ bottom, cornerLights, tier, max: mod.fusionLimit, rank }),
+      await bottomImage({
+        bottom,
+        cornerLights,
+        tier,
+        max: mod.fusionLimit,
+        rank,
+      }),
       centerX,
       background.height * 0.65
     );

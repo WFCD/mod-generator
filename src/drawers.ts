@@ -162,7 +162,13 @@ export const backgroundImage = async (props: BackgroundProps): Promise<Image> =>
   context.drawImage(sideLightsLeft, 0, sideLightsY);
 
   context.drawImage(
-    await backerImage({ backer, tier, base: mod.baseDrain, polarity: mod.polarity, rank }),
+    await backerImage({
+      backer,
+      tier,
+      base: mod.baseDrain,
+      polarity: mod.polarity,
+      rank,
+    }),
     background.width * 0.8,
     background.height * 0.2
   );
