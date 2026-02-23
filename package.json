@@ -41,7 +41,6 @@
     "install-peerdeps": "^3.0.6",
     "lint-staged": "^16.1.2",
     "mocha": "^11.7.1",
-    "prettier": "3.8.1",
     "tsdown": "^0.20.3",
     "tsx": "4.21.0",
     "typedoc": "^0.28.17",
@@ -59,7 +58,6 @@
       "@babel/plugin-transform-private-methods"
     ]
   },
-  "prettier": "@wfcd/eslint-config/prettier",
   "mocha": {
     "timeout": 15000,
     "exit": true,
