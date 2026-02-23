@@ -1,4 +1,4 @@
-import { createCanvas, type Image, loadImage } from '@napi-rs/canvas';
+import { type Canvas, createCanvas, type Image, loadImage } from '@napi-rs/canvas';
 import type { Mod } from 'warframe-items';
 
 import {
@@ -9,13 +9,14 @@ import {
   modDescription,
   modRarityMap,
   textColor,
+  textHeight,
   wrapText,
 } from './utils.js';
 
 export const verticalPad = 70;
-export const horizantalPad = 7;
+export const horizantalPad = 8;
 
-const drawPolarity = async (tier: string, polarity: string): Promise<Image> => {
+const drawPolarity = async (tier: string, polarity: string): Promise<Canvas> => {
   const image = await fetchPolarity(polarity);
 
   const size = 32;
@@ -29,7 +30,7 @@ const drawPolarity = async (tier: string, polarity: string): Promise<Image> => {
   context.fillStyle = textColor(tier);
   context.fillRect(0, 0, size, size);
 
-  return loadImage(await canvas.encode('png'));
+  return canvas;
 };
 
 /**
@@ -53,7 +54,7 @@ interface BackerImageProps {
  * @param {BackerImageProps} props Props used when creating backer image
  * @returns {Promise<Image>}
  */
-export const backerImage = async (props: BackerImageProps): Promise<Image> => {
+export const backerImage = async (props: BackerImageProps): Promise<Canvas> => {
   const { backer, tier, base, polarity, rank } = props;
   const canvas = createCanvas(backer.width, backer.height);
   const context = canvas.getContext('2d');
@@ -66,7 +67,7 @@ export const backerImage = async (props: BackerImageProps): Promise<Image> => {
   const drainHeight = canvas.height * 0.7;
   if (tier === modRarityMap.riven) {
     context.fillText('???', canvas.width * 0.4, drainHeight);
-    return loadImage(await canvas.encode('png'));
+    return canvas;
   }
 
   if (polarity === 'universal') {
@@ -84,7 +85,7 @@ export const backerImage = async (props: BackerImageProps): Promise<Image> => {
     context.fillText(`${drain}`, canvas.width * 0.35, drainHeight);
   }
 
-  return loadImage(await canvas.encode('png'));
+  return canvas;
 };
 
 /**
@@ -101,7 +102,7 @@ interface LowerTabProps {
  * @param {LowerTabProps} props Props used in creating the lower tab
  * @returns {Promise<Image>}
  */
-export const lowerTabImage = async (props: LowerTabProps): Promise<Image> => {
+export const lowerTabImage = async (props: LowerTabProps): Promise<Canvas> => {
   const { lowerTab, tier, compatName } = props;
   const canvas = createCanvas(lowerTab.width, lowerTab.height);
   const context = canvas.getContext('2d');
@@ -117,7 +118,7 @@ export const lowerTabImage = async (props: LowerTabProps): Promise<Image> => {
     context.fillText(compatName, canvas.width * 0.5, canvas.height * 0.5);
   }
 
-  return loadImage(await canvas.encode('png'));
+  return canvas;
 };
 
 /**
@@ -139,7 +140,7 @@ interface BackgroundProps {
  * @param {BackerImageProps} props Props used in create the background image
  * @returns {Promise<Image>}
  */
-export const backgroundImage = async (props: BackgroundProps): Promise<Image> => {
+export const backgroundImage = async (props: BackgroundProps): Promise<Canvas> => {
   const { background, sideLights, backer, lowerTab, bottom, mod, rank, image } = props;
   const tier = getTier(mod);
   const canvas = createCanvas(background.width, background.height);
@@ -147,12 +148,46 @@ export const backgroundImage = async (props: BackgroundProps): Promise<Image> =>
 
   context.drawImage(background, 0, 0);
 
+  const maxWidth = background.width * 0.8;
+  const description = modDescription(mod.description, mod.levelStats, rank ?? 0);
+  const lines = description?.split('\n');
+
+  context.font = '12px "Roboto"';
+  const modTextHeight = textHeight(context, maxWidth, mod.name, lines);
+
+  // Track Y after image is drawn to know where to start drawing the text
+  let position = canvas.height * 0.17;
   if (mod.imageName || image) {
     const thumb = await loadImage(image ?? `https://cdn.warframestat.us/img/${mod.imageName}`);
     const thumbWidth = canvas.width - horizantalPad * 2;
-    const thumbHeight = 170;
+    const thumbHeight = thumb.height - modTextHeight;
 
-    context.drawImage(thumb, horizantalPad, canvas.height * 0.17, thumbWidth, thumbHeight);
+    context.drawImage(thumb, horizantalPad, position, thumbWidth, thumbHeight);
+
+    position += thumbHeight;
+  }
+
+  context.fillStyle = textColor(tier);
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
+  context.font = '400 16px "Roboto"';
+  context.fillText(mod.name, canvas.width * 0.5, position + horizantalPad * 2);
+
+  position += horizantalPad * 2;
+  if (description && description.length > 0) {
+    const x = canvas.width * 0.5;
+
+    context.font = '12px "Roboto"';
+    const lineSpacing = 15;
+    let start = position + horizantalPad * 2;
+
+    lines?.forEach((line) => {
+      const texts = wrapText(context, line, maxWidth);
+      texts.forEach((text) => {
+        context.fillText(text, x, start, maxWidth);
+        start += lineSpacing;
+      });
+    });
   }
 
   const sideLightsY = background.height * 0.21;
@@ -181,33 +216,7 @@ export const backgroundImage = async (props: BackgroundProps): Promise<Image> =>
     background.height - bottom.height - padding
   );
 
-  context.fillStyle = textColor(tier);
-
-  context.textAlign = 'center';
-  context.textBaseline = 'middle';
-  context.font = '400 16px "Roboto"';
-
-  context.fillText(mod.name, canvas.width * 0.5, canvas.height * 0.52);
-
-  const description = modDescription(mod.description, mod.levelStats, rank ?? 0);
-  if (description && description.length > 0) {
-    const x = canvas.width * 0.5;
-    const lines = description.split('\n');
-
-    context.font = '12px "Roboto"';
-    let start = canvas.height * 0.56;
-
-    lines.forEach((line) => {
-      const maxWidth = background.width * 0.8;
-      const texts = wrapText(context, line, maxWidth);
-      texts.forEach((text) => {
-        context.fillText(text, x, start, maxWidth);
-        start += 15;
-      });
-    });
-  }
-
-  return loadImage(await canvas.encode('png'));
+  return canvas;
 };
 
 /**
@@ -228,7 +237,7 @@ interface BottomImageProps {
  * @param {BottomImageProps} props Props used in the creation of the lower frame
  * @returns {Promise<Image>}
  */
-export const bottomImage = async (props: BottomImageProps): Promise<Image> => {
+export const bottomImage = async (props: BottomImageProps): Promise<Canvas> => {
   const { bottom, cornerLights, tier, max, rank } = props;
 
   const rankSlotEmpy = await fetchModPiece('RankSlotEmpty.png');
@@ -276,5 +285,5 @@ export const bottomImage = async (props: BottomImageProps): Promise<Image> => {
     rankSlotStart += 11;
   }
 
-  return loadImage(await canvas.encode('png'));
+  return canvas;
 };

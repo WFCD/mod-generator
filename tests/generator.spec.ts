@@ -1,14 +1,14 @@
 import * as assert from 'node:assert';
 import { existsSync, mkdirSync } from 'node:fs';
-import { join } from 'node:path';
 import { readdir, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
 import { describe, test } from 'mocha';
-import { Mod } from 'warframe-items';
+import type { Mod } from 'warframe-items';
 import { find } from 'warframe-items/utilities';
 
 import generate from '../src/generator.js';
-import { Format } from '../src/utils.js';
+import type { Format } from '../src/utils.js';
 
 describe('Generate a mod', () => {
   test('run test', async () => {
@@ -37,7 +37,7 @@ describe('Generate a mod', () => {
           const modCanvas = await generate(mod, { format }, mod.fusionLimit);
           assert.ok(modCanvas);
 
-          if (modCanvas) await writeFile(join(imagePath, `${mod.name}.${format}`), modCanvas);
+          if (modCanvas) await writeFile(join(imagePath, `${mod.name.replaceAll(' ', '_')}.${format}`), modCanvas);
         })
       );
     }

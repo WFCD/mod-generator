@@ -185,9 +185,28 @@ export const exportCanvas = async (canvas: Canvas, output: CanvasOutput = { form
       case 'jpeg':
         return await canvas.encode('jpeg', output.quality);
       case 'avif':
-        return await canvas.encode('avif', output.cfg);
+        return await canvas.encode('avif', output.cfg ?? { quality: 0 });
     }
   } catch {
     throw Error(`failed to export canvas as ${output.format}`);
   }
+};
+
+export const textHeight = (context: SKRSContext2D, maxWidth: number, title: string, lines?: string[]): number => {
+  const bottomLineSpacing = 15;
+  const titleMetrics = context.measureText(title);
+
+  let height = titleMetrics.actualBoundingBoxAscent + titleMetrics.actualBoundingBoxDescent;
+
+  if (lines) {
+    lines.forEach((line) => {
+      const text = wrapText(context, line, maxWidth);
+      text.forEach((t) => {
+        const metrics = context.measureText(t);
+        height += metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+      });
+    });
+  }
+
+  return height + bottomLineSpacing;
 };

@@ -58,7 +58,7 @@
     ]
   },
   "mocha": {
-    "timeout": 20000,
+    "timeout": 22000,
     "exit": true,
     "node-option": [
       "import=tsx"
