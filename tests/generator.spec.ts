@@ -12,7 +12,7 @@ import { Format } from '../src/utils.js';
 
 describe('Generate a mod', () => {
   test('run test', async () => {
-    const formats = ['webp', 'jpeg', 'avif', 'png'];
+    const formats: Format[] = ['webp', 'jpeg', 'avif', 'png'];
     const mods = [
       '/Lotus/Upgrades/Mods/Warframe/Kahl/KahlAvatarAbilityStrengthMod',
       '/Lotus/Upgrades/Mods/Warframe/AvatarAbilityEfficiencyMod',
@@ -34,7 +34,7 @@ describe('Generate a mod', () => {
 
           const mod = find.findItem(mods[i]) as Mod;
           if (!mod) return;
-          const modCanvas = await generate(mod, { format: format as Format }, mod.fusionLimit);
+          const modCanvas = await generate(mod, { format }, mod.fusionLimit);
           assert.ok(modCanvas);
 
           if (modCanvas) await writeFile(join(imagePath, `${mod.name}.${format}`), modCanvas);

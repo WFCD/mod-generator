@@ -1,11 +1,10 @@
-import { existsSync } from 'fs';
 import { join } from 'path';
-import { readFile, mkdir, writeFile } from 'fs/promises';
+import { readFile } from 'fs/promises';
 
 import { AvifConfig, Canvas, GlobalFonts, Image, SKRSContext2D, createCanvas, loadImage } from '@napi-rs/canvas';
 import { LevelStat, Mod } from 'warframe-items';
 
-const assetPath = join('.', 'assets', 'modFrames');
+const assetPath = join('.', 'genesis-assets');
 
 type RarityType = {
   [key: string]: string;
@@ -37,26 +36,10 @@ export const flip = async (image: Image): Promise<Image> => {
   return loadImage(await canvas.encode('png'));
 };
 
-const downloadModPiece = async (name: string) => {
-  const base = 'https://cdn.warframestat.us/genesis/modFrames';
-  const image = await fetch(`${base}/${name}`);
-  const blob = await image.blob();
-
-  return Buffer.from(await blob.arrayBuffer());
-};
-
 export const fetchModPiece = async (name: string) => {
-  const filePath = join(assetPath, name);
-  if (existsSync(filePath)) {
-    const image = await readFile(filePath);
+  const filePath = join(assetPath, 'modFrames', name);
+  const image = await readFile(filePath);
 
-    return loadImage(image);
-  }
-
-  const image = await downloadModPiece(name);
-  if (!existsSync(assetPath)) await mkdir(assetPath, { recursive: true });
-
-  await writeFile(filePath, image);
   return loadImage(image);
 };
 
@@ -101,20 +84,9 @@ export const getBackground = async (tier: string): Promise<ModBackground> => {
 };
 
 export const fetchPolarity = async (polarity: string): Promise<Image> => {
-  const filePath = join(assetPath, `${polarity}.png`);
-  if (existsSync(filePath)) {
-    const image = await readFile(filePath);
+  const filePath = join(assetPath, 'img', 'polarities', `${polarity}.png`);
+  const image = await readFile(filePath);
 
-    return loadImage(image);
-  }
-
-  const base = 'https://cdn.warframestat.us/genesis/img/polarities';
-  const res = await fetch(`${base}/${polarity}.png`);
-
-  const image = Buffer.from(await (await res.blob()).arrayBuffer());
-  if (!existsSync(assetPath)) await mkdir(assetPath, { recursive: true });
-
-  await writeFile(join(assetPath, `${polarity}.png`), image);
   return loadImage(image);
 };
 
@@ -143,14 +115,14 @@ export const wrapText = (context: SKRSContext2D, text: string, maxWidth: number)
   const lines = [];
 
   words.forEach((word) => {
-    const testLine = `${currentLine} ${word}`;
-    const testLineWidth = context.measureText(testLine).width;
+    const line = `${currentLine} ${word}`;
+    const lineWidth = context.measureText(line).width;
 
-    if (testLineWidth > maxWidth) {
+    if (lineWidth > maxWidth) {
       lines.push(currentLine);
       currentLine = word;
     } else {
-      currentLine = testLine;
+      currentLine = line;
     }
   });
 
