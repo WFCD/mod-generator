@@ -28,7 +28,7 @@ $ npm i -S mod-generator
 import { find } from 'warframe-items/utilities';
 
 const mod = find.findItem('/Lotus/Powersuits/Dragon/DragonBreathAugmentCard');
-const image = generate(mod, 3); // You can set rank to whatever rank you want by defualt it's 0
+const image = generate(mod, 3); // You can set rank to whatever rank you want by default is 0
 
 writeFileSync('directory/image.png', image);
 ```
