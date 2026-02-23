@@ -1,7 +1,6 @@
 export default {
   "*.ts": [
     "biome check --write",
-    "prettier --write",
     () => "tsc -p tsconfig.json --noEmit",
     () => "npm test"
   ],
