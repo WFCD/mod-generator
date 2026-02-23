@@ -103,7 +103,7 @@ const generate = async (
     );
   }
 
-  const outterCanvas = createCanvas(isRiven ? 292 : 256, 360);
+  const outterCanvas = createCanvas(isRiven ? 292 : 256, 380);
   const outterContext = outterCanvas.getContext('2d');
 
   outterContext.drawImage(canvas, (outterCanvas.width - canvas.width) / 2, (outterCanvas.height - canvas.height) / 2);

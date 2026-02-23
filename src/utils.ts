@@ -185,7 +185,7 @@ export const exportCanvas = async (canvas: Canvas, output: CanvasOutput = { form
       case 'jpeg':
         return await canvas.encode('jpeg', output.quality);
       case 'avif':
-        return await canvas.encode('avif', output.cfg);
+        return await canvas.encode('avif', output.cfg ?? { quality: 0 });
     }
   } catch {
     throw Error(`failed to export canvas as ${output.format}`);

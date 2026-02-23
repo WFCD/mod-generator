@@ -1,4 +1,4 @@
-import { createCanvas, type Image, loadImage } from '@napi-rs/canvas';
+import { type Canvas, createCanvas, type Image, loadImage } from '@napi-rs/canvas';
 import type { Mod } from 'warframe-items';
 
 import {
@@ -16,7 +16,7 @@ import {
 export const verticalPad = 70;
 export const horizantalPad = 8;
 
-const drawPolarity = async (tier: string, polarity: string): Promise<Image> => {
+const drawPolarity = async (tier: string, polarity: string): Promise<Canvas> => {
   const image = await fetchPolarity(polarity);
 
   const size = 32;
@@ -30,7 +30,7 @@ const drawPolarity = async (tier: string, polarity: string): Promise<Image> => {
   context.fillStyle = textColor(tier);
   context.fillRect(0, 0, size, size);
 
-  return loadImage(await canvas.encode('png'));
+  return canvas;
 };
 
 /**
@@ -54,7 +54,7 @@ interface BackerImageProps {
  * @param {BackerImageProps} props Props used when creating backer image
  * @returns {Promise<Image>}
  */
-export const backerImage = async (props: BackerImageProps): Promise<Image> => {
+export const backerImage = async (props: BackerImageProps): Promise<Canvas> => {
   const { backer, tier, base, polarity, rank } = props;
   const canvas = createCanvas(backer.width, backer.height);
   const context = canvas.getContext('2d');
@@ -67,7 +67,7 @@ export const backerImage = async (props: BackerImageProps): Promise<Image> => {
   const drainHeight = canvas.height * 0.7;
   if (tier === modRarityMap.riven) {
     context.fillText('???', canvas.width * 0.4, drainHeight);
-    return loadImage(await canvas.encode('png'));
+    return canvas;
   }
 
   if (polarity === 'universal') {
@@ -85,7 +85,7 @@ export const backerImage = async (props: BackerImageProps): Promise<Image> => {
     context.fillText(`${drain}`, canvas.width * 0.35, drainHeight);
   }
 
-  return loadImage(await canvas.encode('png'));
+  return canvas;
 };
 
 /**
@@ -102,7 +102,7 @@ interface LowerTabProps {
  * @param {LowerTabProps} props Props used in creating the lower tab
  * @returns {Promise<Image>}
  */
-export const lowerTabImage = async (props: LowerTabProps): Promise<Image> => {
+export const lowerTabImage = async (props: LowerTabProps): Promise<Canvas> => {
   const { lowerTab, tier, compatName } = props;
   const canvas = createCanvas(lowerTab.width, lowerTab.height);
   const context = canvas.getContext('2d');
@@ -118,7 +118,7 @@ export const lowerTabImage = async (props: LowerTabProps): Promise<Image> => {
     context.fillText(compatName, canvas.width * 0.5, canvas.height * 0.5);
   }
 
-  return loadImage(await canvas.encode('png'));
+  return canvas;
 };
 
 /**
@@ -140,7 +140,7 @@ interface BackgroundProps {
  * @param {BackerImageProps} props Props used in create the background image
  * @returns {Promise<Image>}
  */
-export const backgroundImage = async (props: BackgroundProps): Promise<Image> => {
+export const backgroundImage = async (props: BackgroundProps): Promise<Canvas> => {
   const { background, sideLights, backer, lowerTab, bottom, mod, rank, image } = props;
   const tier = getTier(mod);
   const canvas = createCanvas(background.width, background.height);
@@ -216,7 +216,7 @@ export const backgroundImage = async (props: BackgroundProps): Promise<Image> =>
     background.height - bottom.height - padding
   );
 
-  return loadImage(await canvas.encode('png'));
+  return canvas;
 };
 
 /**
@@ -237,7 +237,7 @@ interface BottomImageProps {
  * @param {BottomImageProps} props Props used in the creation of the lower frame
  * @returns {Promise<Image>}
  */
-export const bottomImage = async (props: BottomImageProps): Promise<Image> => {
+export const bottomImage = async (props: BottomImageProps): Promise<Canvas> => {
   const { bottom, cornerLights, tier, max, rank } = props;
 
   const rankSlotEmpy = await fetchModPiece('RankSlotEmpty.png');
@@ -285,5 +285,5 @@ export const bottomImage = async (props: BottomImageProps): Promise<Image> => {
     rankSlotStart += 11;
   }
 
-  return loadImage(await canvas.encode('png'));
+  return canvas;
 };
