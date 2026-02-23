@@ -9,6 +9,7 @@ import {
   modDescription,
   modRarityMap,
   textColor,
+  textHeight,
   wrapText,
 } from './utils.js';
 
@@ -212,32 +213,6 @@ export const backgroundImage = async (props: BackgroundProps): Promise<Image> =>
     background.width * 0.09,
     background.height - bottom.height - padding
   );
-
-  context.fillStyle = textColor(tier);
-
-  context.textAlign = 'center';
-  context.textBaseline = 'middle';
-  context.font = '400 16px "Roboto"';
-
-  context.fillText(mod.name, canvas.width * 0.5, canvas.height * 0.52);
-
-  const description = modDescription(mod.description, mod.levelStats, rank ?? 0);
-  if (description && description.length > 0) {
-    const x = canvas.width * 0.5;
-    const lines = description.split('\n');
-
-    context.font = '12px "Roboto"';
-    let start = canvas.height * 0.56;
-
-    lines.forEach((line) => {
-      const maxWidth = background.width * 0.8;
-      const texts = wrapText(context, line, maxWidth);
-      texts.forEach((text) => {
-        context.fillText(text, x, start, maxWidth);
-        start += 15;
-      });
-    });
-  }
 
   return loadImage(await canvas.encode('png'));
 };
