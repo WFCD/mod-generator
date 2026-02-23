@@ -28,7 +28,5 @@ jobs:
       - run: npm run lint
       - name: Run commitlint
         run: npx commitlint --last --verbose
-      - name: test remove after
-        run: ls -a
       - name: Run tests
         run: npm test
