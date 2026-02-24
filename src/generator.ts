@@ -1,17 +1,17 @@
 import { createCanvas } from '@napi-rs/canvas';
 import type { Mod } from 'warframe-items';
 
-import { backgroundImage, bottomImage, horizantalPad } from './drawers.js';
-import {
-  type CanvasOutput,
-  exportCanvas,
-  getBackground,
-  getFrame,
-  getTier,
-  modRarityMap,
-  registerFonts,
-} from './utils.js';
+import { backgroundImage, bottomImage, drawHeader, horizontalPad } from './drawers';
+import { modRarityMap } from './styling';
+import { type CanvasOutput, exportCanvas, fetchHeader, getBackground, getFrame, getTier, registerFonts } from './utils';
 
+export interface GenerateModProps {
+  mod: Mod;
+  rank?: number;
+  setBonus?: number;
+  image?: string;
+  output?: CanvasOutput;
+}
 /**
  * Generates a complete mod image
  *
@@ -21,26 +21,20 @@ import {
  *  - gold
  *  - primed
  *  - rivens
+ *  - mod sets
  *
  * None supported mod types will default to using common as it's frame
  *
  * Notes:
  *  - Archon mods will use the gold mod frame
- * @param {Mod} mod The Mod to build the image on
- * @param {CanvasOutput} output The image format to export as (png, webp, avif, jpeg)
- * @param {number | undefined} rank The rank the mod would be at. Can be empty to show unranked
- * @param {string | undefined} image Optional thumbnail to show instead of the mod default thumbnail (Good for memes)
+ * @param {GenerateModProps} props Properties to use when creating mod image
  * @returns {Promise<Buffer<ArrayBufferLike> | undefined>}
  */
-const generate = async (
-  mod: Mod,
-  output: CanvasOutput = { format: 'png' },
-  rank?: number,
-  image?: string
-): Promise<Buffer<ArrayBufferLike> | undefined> => {
+const generate = async (props: GenerateModProps): Promise<Buffer<ArrayBufferLike> | undefined> => {
   // All values here should be percentages based on the background size and NOT on the canvas size.
   // The reason for this is that special mod pieces have a bigger width then the base 256 width of the background,
   // so the canvas has to be big enough to keep those parts in view.
+  const { mod, output, rank, setBonus, image } = props;
   const tier = getTier(mod);
   const isRiven = tier === modRarityMap.riven;
 
@@ -63,20 +57,34 @@ const generate = async (
     bottom: { width: bottom.width, height: bottom.height },
     mod,
     rank,
+    setBonus,
     image,
   });
   context.drawImage(backgroundGen, centerX, centerY);
 
+  const topFrameHeight = background.height * 0.14;
   if (top.width > background.width) {
-    const newXPadding = horizantalPad * 6;
+    const newXPadding = horizontalPad * 6;
     const widthDiff = top.width - background.width - newXPadding;
-    context.drawImage(top, -widthDiff / 2, background.height * 0.14);
+    context.drawImage(top, -widthDiff / 2, topFrameHeight);
   } else {
-    context.drawImage(top, centerX, background.height * 0.14);
+    context.drawImage(top, centerX, topFrameHeight);
+  }
+
+  if (mod.modSet) {
+    const header = await fetchHeader(mod.modSet);
+
+    context.drawImage(
+      await drawHeader(header, tier),
+      background.width * 0.3,
+      background.height * 0.13,
+      header.width * 0.8,
+      header.height * 0.8
+    );
   }
 
   if (bottom.width > background.width) {
-    const newXPadding = horizantalPad * 5;
+    const newXPadding = horizontalPad * 5;
     const widthDiff = bottom.width - background.width - newXPadding;
     context.drawImage(
       await bottomImage({
@@ -108,7 +116,7 @@ const generate = async (
 
   outterContext.drawImage(canvas, (outterCanvas.width - canvas.width) / 2, (outterCanvas.height - canvas.height) / 2);
 
-  return exportCanvas(outterCanvas, output);
+  return exportCanvas(outterCanvas, output ?? { format: 'png' });
 };
 
 export default generate;

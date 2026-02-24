@@ -11,6 +11,8 @@ Generate mod images using warframe-items
 ![Vitality](/assets/readme/Vitality.png)
 ![Archgun Riven Mod](/assets/readme/Archgun_Riven_Mod.png)
 ![Primed Flow](/assets/readme/Primed_Flow.png)
+![Auger Message](/assets/readme/Augur_Message_empty.png)
+![Auger Message Full](/assets/readme/Augur_Message_filled.png)
 
 ## Documentation
 

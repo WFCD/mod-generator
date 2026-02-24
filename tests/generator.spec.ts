@@ -12,7 +12,7 @@ import type { Format } from '../src/utils.js';
 
 describe('Generate a mod', () => {
   test('run test', async () => {
-    const formats: Format[] = ['webp', 'jpeg', 'avif', 'png'];
+    const formats: Format[] = ['webp', 'jpeg', 'png', 'avif'];
     const mods = [
       '/Lotus/Upgrades/Mods/Warframe/Kahl/KahlAvatarAbilityStrengthMod',
       '/Lotus/Upgrades/Mods/Warframe/AvatarAbilityEfficiencyMod',
@@ -21,20 +21,22 @@ describe('Generate a mod', () => {
       '/Lotus/Upgrades/Mods/Randomized/LotusArchgunRandomModRare',
       '/Lotus/Powersuits/Dragon/DragonBreathAugmentCard',
       '/Lotus/Upgrades/Mods/Warframe/Expert/AvatarPowerMaxModExpert',
+      '/Lotus/Upgrades/Mods/Sets/Augur/WarframeAugurMessageMod',
     ];
 
     const testPath = join('.', 'assets', 'tests');
     if (!existsSync(testPath)) mkdirSync(testPath, { recursive: true });
 
-    for (let i = 0; i < mods.length; i += 1) {
+    for (let i = 0; i <= mods.length; i += 1) {
       await Promise.all(
         formats.map(async (format) => {
           const imagePath = join(testPath, format);
           if (!existsSync(imagePath)) mkdirSync(imagePath, { recursive: true });
 
           const mod = find.findItem(mods[i]) as Mod;
+
           if (!mod) return;
-          const modCanvas = await generate(mod, { format }, mod.fusionLimit);
+          const modCanvas = await generate({ mod, rank: mod.fusionLimit, output: { format } });
           assert.ok(modCanvas);
 
           if (modCanvas) await writeFile(join(imagePath, `${mod.name.replaceAll(' ', '_')}.${format}`), modCanvas);
