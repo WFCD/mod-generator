@@ -12,6 +12,8 @@ import {
 } from '@napi-rs/canvas';
 import type { LevelStat, Mod } from 'warframe-items';
 
+import { descriptionFont, modRarityMap, tierColor, titleFont } from './styling';
+
 const assetPath = join('.', 'genesis-assets');
 
 export const getTier = (mod: Mod) => {
@@ -37,6 +39,11 @@ export const fetchModPiece = async (name: string) => {
   const image = await readFile(filePath);
 
   return loadImage(image);
+};
+
+export const fetchHeader = async (modSet: string): Promise<Image> => {
+  const name = modSet.split('/').reverse()[1]; // i.e /Lotus/Upgrades/Mods/Sets/Strain/StrainSetMod = Strain
+  return fetchModPiece(`${name}Header.png`);
 };
 
 export interface ModFrame {
@@ -169,12 +176,18 @@ export const exportCanvas = async (canvas: Canvas, output: CanvasOutput = { form
   }
 };
 
-export const textHeight = (context: SKRSContext2D, maxWidth: number, title: string, lines?: string[]): number => {
+export const textHeight = (context: SKRSContext2D, maxWidth: number, title?: string, lines?: string[]): number => {
+  const tempFont = context.font;
   const bottomLineSpacing = 15;
-  const titleMetrics = context.measureText(title);
 
-  let height = titleMetrics.actualBoundingBoxAscent + titleMetrics.actualBoundingBoxDescent;
+  context.font = titleFont;
 
+  let titleMetrics: TextMetrics;
+  if (title) titleMetrics = context.measureText(title);
+
+  let height = !title ? 0 : titleMetrics!.actualBoundingBoxAscent + titleMetrics!.actualBoundingBoxDescent;
+
+  context.font = descriptionFont;
   if (lines) {
     lines.forEach((line) => {
       const text = wrapText(context, line, maxWidth);
@@ -185,5 +198,21 @@ export const textHeight = (context: SKRSContext2D, maxWidth: number, title: stri
     });
   }
 
+  context.font = tempFont;
   return height + bottomLineSpacing;
+};
+
+export interface RGB {
+  r: number;
+  g: number;
+  b: number;
+}
+
+export const hexToRGB = (hex: string): RGB => {
+  const values = hex.slice(1).match(/.{2}/g);
+  if (!values || values.length < 3) throw Error('Invalid Hex color');
+
+  const colors = values.map((x) => parseInt(x, 16));
+
+  return { r: colors[0], g: colors[1], b: colors[2] };
 };

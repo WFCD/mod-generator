@@ -1,16 +1,17 @@
 import { createCanvas } from '@napi-rs/canvas';
 import type { Mod } from 'warframe-items';
 
-import { backgroundImage, bottomImage, horizantalPad } from './drawers.js';
+import { backgroundImage, bottomImage, drawHeader, horizontalPad } from './drawers';
 import {
   type CanvasOutput,
   exportCanvas,
+  fetchHeader,
   getBackground,
   getFrame,
   getTier,
-  modRarityMap,
   registerFonts,
-} from './utils.js';
+} from './utils';
+import { modRarityMap } from './styling';
 
 interface GenerateModProps {
   mod: Mod;
@@ -79,7 +80,7 @@ const generate = async (props: GenerateModProps): Promise<Buffer<ArrayBufferLike
   }
 
   if (mod.modSet) {
-    const header = await setHeader(mod.uniqueName);
+    const header = await fetchHeader(mod.modSet);
 
     context.drawImage(
       await drawHeader(header, tier),
@@ -91,7 +92,7 @@ const generate = async (props: GenerateModProps): Promise<Buffer<ArrayBufferLike
   }
 
   if (bottom.width > background.width) {
-    const newXPadding = horizantalPad * 5;
+    const newXPadding = horizontalPad * 5;
     const widthDiff = bottom.width - background.width - newXPadding;
     context.drawImage(
       await bottomImage({
