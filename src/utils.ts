@@ -155,19 +155,16 @@ export interface CanvasOutput {
 }
 
 export const exportCanvas = async (canvas: Canvas, output: CanvasOutput = { format: 'png' }) => {
-  const quality = output.quality || output.cfg?.quality;
-  if (quality !== undefined && (quality < 0 || quality > 100)) {
-    throw new Error('quality cannot be less then 0 or more then 100');
-  }
+  const quality = output.quality || 100;
 
   try {
     switch (output.format) {
       case 'png':
         return await canvas.encode('png');
       case 'webp':
-        return await canvas.encode('webp', quality || 100);
+        return await canvas.encode('webp', quality);
       case 'jpeg':
-        return await canvas.encode('jpeg', quality || 100);
+        return await canvas.encode('jpeg', quality);
       case 'avif':
         return await canvas.encode('avif', output.cfg ?? { quality: 0 });
     }
