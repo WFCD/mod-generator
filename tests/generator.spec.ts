@@ -12,7 +12,7 @@ import type { Format } from '../src/utils.js';
 
 describe('Generate a mod', () => {
   test('run test', async () => {
-    const formats: Format[] = ['png'];
+    const formats: Format[] = ['webp', 'jpeg', 'png', 'avif'];
     const mods = [
       '/Lotus/Upgrades/Mods/Warframe/Kahl/KahlAvatarAbilityStrengthMod',
       '/Lotus/Upgrades/Mods/Warframe/AvatarAbilityEfficiencyMod',
