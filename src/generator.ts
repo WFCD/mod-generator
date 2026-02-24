@@ -5,7 +5,7 @@ import { backgroundImage, bottomImage, drawHeader, horizontalPad } from './drawe
 import { modRarityMap } from './styling';
 import { type CanvasOutput, exportCanvas, fetchHeader, getBackground, getFrame, getTier, registerFonts } from './utils';
 
-interface GenerateModProps {
+export interface GenerateModProps {
   mod: Mod;
   rank?: number;
   setBonus?: number;
