@@ -2,16 +2,8 @@ import { createCanvas } from '@napi-rs/canvas';
 import type { Mod } from 'warframe-items';
 
 import { backgroundImage, bottomImage, drawHeader, horizontalPad } from './drawers';
-import {
-  type CanvasOutput,
-  exportCanvas,
-  fetchHeader,
-  getBackground,
-  getFrame,
-  getTier,
-  registerFonts,
-} from './utils';
 import { modRarityMap } from './styling';
+import { type CanvasOutput, exportCanvas, fetchHeader, getBackground, getFrame, getTier, registerFonts } from './utils';
 
 interface GenerateModProps {
   mod: Mod;
