@@ -8,8 +8,7 @@ on:
 jobs:
   deploy:
     permissions:
-      pages: write
-      id-token: write
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
