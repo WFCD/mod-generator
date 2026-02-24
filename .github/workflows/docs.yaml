@@ -3,10 +3,13 @@ name: GitHub pages
 on:
   push:
     branches:
-      - main
+      - fix-docs
 
 jobs:
   deploy:
+    permissions:
+      pages: write
+      id-token: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
