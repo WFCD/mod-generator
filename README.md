@@ -4,7 +4,7 @@
 [![semantic-release: angular](https://img.shields.io/badge/semantic--release-angular-e10079?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
 
 # mod-generator
-Assembles [Mod Assets](https://wiki.warframe.com/w/Mod/Assets) into full/collpased mod images using warframe-items
+Assembles [Mod Assets](https://wiki.warframe.com/w/Mod/Assets) into full/collapsed mod images using warframe-items
 
 Supported Mod Types:
 - The four basic mods (common, uncommon, rare, primed)
