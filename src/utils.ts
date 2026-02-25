@@ -206,10 +206,32 @@ export interface RGB {
 }
 
 export const hexToRGB = (hex: string): RGB => {
-  const values = hex.slice(1).match(/.{2}/g);
-  if (!values || values.length < 3) throw Error('Invalid Hex color');
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
 
-  const colors = values.map((x) => parseInt(x, 16));
+  return { r, g, b };
+};
 
-  return { r: colors[0], g: colors[1], b: colors[2] };
+// https://medium.com/@carlosabpreciado/adding-tint-shade-dynamically-to-a-color-with-javascript-or-any-language-fa5b51ef5777
+export const shadePixel = (pixel: RGB, percentage: number): RGB => {
+  const redShade = Math.round(Math.max(0, pixel.r - pixel.r * percentage));
+  const greenShade = Math.round(Math.max(0, pixel.g - pixel.g * percentage));
+  const blueShade = Math.round(Math.max(0, pixel.b - pixel.b * percentage));
+
+  return { r: redShade, g: greenShade, b: blueShade };
+};
+
+export const tintPixel = (pixel: RGB, tint: RGB, percentage: number = 0.8): RGB => {
+  const maxColors = 255;
+
+  // Adjust these values to control darkness
+  const originalWeight = 0.2;
+  const brightness = (pixel.r + pixel.g + pixel.b) / 3 / maxColors;
+
+  const tintedRed = Math.min(maxColors, pixel.r * originalWeight + tint.r * brightness * percentage);
+  const tintedGreen = Math.min(maxColors, pixel.g * originalWeight + tint.g * brightness * percentage);
+  const tintedBlue = Math.min(maxColors, pixel.b * originalWeight + tint.b * brightness * percentage);
+
+  return { r: tintedRed, g: tintedGreen, b: tintedBlue };
 };
