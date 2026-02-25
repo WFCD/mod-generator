@@ -10,16 +10,16 @@ Supported Mod Types:
 - The four basic mods (common, uncommon, rare, primed)
 - Rivens
 
-### Collapsed
+## Collapsed
 ____
 ![Augur Message](/assets/readme/Augur_Message_collpased.png)
 ![Steel Charge](/assets/readme/Steel_Charge_collpased.png)
 ![Afterburn](/assets/readme/Afterburn_collpased.png)
 ![Primed Flow](/assets/readme/Primed_Flow_collpased.png)
 
-### Expanded
+## Expanded
 ____
-![Auger Message](/assets/readme/Augur_Message.png)
+![Augur Message](/assets/readme/Augur_Message.png)
 ![Steel Charge](/assets/readme/Steel_Charge.png)
 ![Afterburn](/assets/readme/Afterburn.png)
 ![Primed Flow](/assets/readme/Primed_Flow.png)
@@ -43,6 +43,6 @@ const mod = find.findItem('/Lotus/Powersuits/Dragon/DragonBreathAugmentCard');
 const expanded = generate(mod, 3); // You can set rank to whatever rank you want by default is 0
 const collapsed = generateCollapsed(mod, 3);
 
-writeFileSync('directory/image.png', expanded);
-writeFileSync('directory/image.png', collpased);
+writeFileSync('directory/expanded.png', expanded);
+writeFileSync('directory/collapsed.png', collpased);
 ```
