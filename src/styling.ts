@@ -1,5 +1,6 @@
-export const titleFont = '400 20px "Roboto"';
-export const descriptionFont = '12px "Roboto"';
+export const titleFont = '400 22px "Roboto"';
+export const descriptionFont = '14px "Roboto"';
+export const compatNameFont = '500 16px "Roboto"';
 
 type UniquenameType = {
   [key: string]: string;

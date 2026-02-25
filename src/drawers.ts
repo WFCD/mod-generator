@@ -2,7 +2,7 @@ import { type Canvas, createCanvas, type Image, ImageData, loadImage } from '@na
 import type { Mod, ModSet } from 'warframe-items';
 import { find } from 'warframe-items/utilities';
 
-import { descriptionFont, modRarityMap, titleFont } from './styling.js';
+import { compatNameFont, descriptionFont, modRarityMap, titleFont } from './styling.js';
 import {
   fetchModPiece,
   fetchPolarity,
@@ -10,8 +10,10 @@ import {
   getTier,
   hexToRGB,
   modDescription,
+  shadePixel,
   textColor,
   textHeight,
+  tintPixel,
   wrapText,
 } from './utils.js';
 
@@ -36,7 +38,6 @@ const drawPolarity = async (tier: string, polarity: string): Promise<Canvas> => 
 };
 
 export const drawHeader = async (image: Image, tier: string): Promise<Image> => {
-  const maxColors = 255;
   const canvas = createCanvas(image.width, image.height);
   const context = canvas.getContext('2d');
 
@@ -48,15 +49,42 @@ export const drawHeader = async (image: Image, tier: string): Promise<Image> => 
   for (let i = 0; i < data.length; i += 4) {
     const alpha = data[i + 3];
     if (alpha > 0) {
-      const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3 / maxColors;
+      let pixel = { r: data[i], g: data[i + 1], b: data[i + 2] };
+      pixel = tintPixel(pixel, color, 0.8);
 
-      // Adjust these values to control darkness
-      const originalWeight = 0.2;
-      const tintWeight = 0.8; // lower values for darker tint
+      data[i] = pixel.r;
+      data[i + 1] = pixel.g;
+      data[i + 2] = pixel.b;
+    }
+  }
 
-      data[i] = Math.min(maxColors, data[i] * originalWeight + color.r * brightness * tintWeight);
-      data[i + 1] = Math.min(maxColors, data[i + 1] * originalWeight + color.g * brightness * tintWeight);
-      data[i + 2] = Math.min(maxColors, data[i + 2] * originalWeight + color.b * brightness * tintWeight);
+  context.putImageData(new ImageData(data, image.width, image.height), 0, 0);
+
+  return loadImage(await canvas.encode('png'));
+};
+
+/**
+ * Darkens the given image
+ * @param image Image to darken
+ * @returns
+ */
+export const shadeImage = async (image: Image): Promise<Image> => {
+  const canvas = createCanvas(image.width, image.height);
+  const context = canvas.getContext('2d');
+
+  context.drawImage(image, 0, 0);
+
+  const { data } = context.getImageData(0, 0, image.width, image.height);
+
+  for (let i = 0; i < data.length; i += 4) {
+    const alpha = data[i + 3];
+    if (alpha > 0) {
+      let pixel = { r: data[i], g: data[i + 1], b: data[i + 2] };
+      pixel = shadePixel(pixel, 0.7);
+
+      data[i] = pixel.r;
+      data[i + 1] = pixel.g;
+      data[i + 2] = pixel.b;
     }
   }
 
@@ -142,12 +170,12 @@ export const lowerTabImage = async (props: LowerTabProps): Promise<Canvas> => {
   context.drawImage(lowerTab, 0, 0);
 
   if (compatName) {
-    context.font = '300 16px "Roboto"';
+    context.font = compatNameFont;
     context.textAlign = 'center';
     context.textBaseline = 'middle';
     context.fillStyle = textColor(tier);
 
-    context.fillText(compatName, canvas.width * 0.5, canvas.height * 0.5);
+    context.fillText(compatName.toUpperCase(), canvas.width * 0.5, canvas.height * 0.5);
   }
 
   return canvas;
@@ -182,7 +210,7 @@ export const backgroundImage = async (props: BackgroundProps): Promise<Canvas> =
 
   context.drawImage(background, 0, 0);
 
-  const maxWidth = background.width * 0.8;
+  const maxWidth = background.width * 0.85;
   const description = modDescription(rank ?? 0, mod.description, mod.levelStats);
   const lines = description?.split('\n');
 
@@ -213,7 +241,6 @@ export const backgroundImage = async (props: BackgroundProps): Promise<Canvas> =
   context.textAlign = 'center';
   context.textBaseline = 'middle';
   context.font = titleFont;
-
   context.fillText(mod.name, canvas.width * 0.5, position + horizontalPad * 2);
 
   position += horizontalPad + lineSpacing;
@@ -345,7 +372,7 @@ export const bottomImage = async (props: BottomImageProps): Promise<Canvas> => {
   if (rank === maxRank) context.drawImage(rankCompleted, 0, slotLineHeight);
 
   let rankSlotStart = canvas.width * 0.29;
-  if (maxRank <= 3) rankSlotStart = canvas.width * 0.43;
+  if (maxRank <= 3) rankSlotStart = canvas.width * 0.425;
   if (maxRank <= 5 && maxRank >= 4) rankSlotStart = canvas.width * 0.39;
 
   for (let i = 0; i < maxRank; i += 1) {

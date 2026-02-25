@@ -7,7 +7,7 @@ import { describe, test } from 'mocha';
 import type { Mod } from 'warframe-items';
 import { find } from 'warframe-items/utilities';
 
-import generate from '../src/generator.js';
+import generate, { generateCollapsed } from '../src/generator.js';
 import type { Format } from '../src/utils.js';
 
 describe('Generate a mod', () => {
@@ -36,10 +36,12 @@ describe('Generate a mod', () => {
           const mod = find.findItem(mods[i]) as Mod;
 
           if (!mod) return;
-          const modCanvas = await generate({ mod, rank: mod.fusionLimit, output: { format } });
-          assert.ok(modCanvas);
+          const modFull = await generate({ mod, rank: mod.fusionLimit, output: { format } });
+          const modMin = await generateCollapsed({ mod, rank: mod.fusionLimit, output: { format } });
+          assert.ok(modFull);
 
-          if (modCanvas) await writeFile(join(imagePath, `${mod.name.replaceAll(' ', '_')}.${format}`), modCanvas);
+          if (modFull) await writeFile(join(imagePath, `${mod.name.replaceAll(' ', '_')}.${format}`), modFull);
+          if (modMin) await writeFile(join(imagePath, `${mod.name.replaceAll(' ', '_')}_collpased.${format}`), modMin);
         })
       );
     }
@@ -47,7 +49,7 @@ describe('Generate a mod', () => {
     await Promise.all(
       formats.map(async (format) => {
         const testFiles = await readdir(join(testPath, format));
-        assert.equal(testFiles.length, mods.length);
+        assert.equal(testFiles.length, mods.length * 2);
       })
     );
   });
