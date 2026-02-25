@@ -182,7 +182,7 @@ export const backgroundImage = async (props: BackgroundProps): Promise<Canvas> =
 
   context.drawImage(background, 0, 0);
 
-  const maxWidth = background.width * 0.8;
+  const maxWidth = background.width * 0.85;
   const description = modDescription(rank ?? 0, mod.description, mod.levelStats);
   const lines = description?.split('\n');
 
