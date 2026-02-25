@@ -23,6 +23,8 @@ export interface GenerateModProps {
 }
 
 export const generateCollapsed = async (props: GenerateModProps): Promise<Buffer<ArrayBufferLike> | undefined> => {
+  registerFonts();
+
   const { mod, output, rank, image } = props;
   const tier = getTier(mod);
   const isRiven = tier === modRarityMap.riven;
@@ -111,6 +113,8 @@ export const generateCollapsed = async (props: GenerateModProps): Promise<Buffer
  * @returns {Promise<Buffer<ArrayBufferLike> | undefined>}
  */
 const generate = async (props: GenerateModProps): Promise<Buffer<ArrayBufferLike> | undefined> => {
+  registerFonts();
+
   // All values here should be percentages based on the background size and NOT on the canvas size.
   // The reason for this is that special mod pieces have a bigger width then the base 256 width of the background,
   // so the canvas has to be big enough to keep those parts in view.
@@ -126,8 +130,6 @@ const generate = async (props: GenerateModProps): Promise<Buffer<ArrayBufferLike
 
   const centerX = (canvas.width - background.width) / 2;
   const centerY = (canvas.height - background.height) / 2;
-
-  registerFonts();
 
   const backgroundGen = await backgroundImage({
     background,
