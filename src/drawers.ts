@@ -2,7 +2,7 @@ import { type Canvas, createCanvas, type Image, ImageData, loadImage } from '@na
 import type { Mod, ModSet } from 'warframe-items';
 import { find } from 'warframe-items/utilities';
 
-import { descriptionFont, modRarityMap, titleFont } from './styling.js';
+import { compatNameFont, descriptionFont, modRarityMap, titleFont } from './styling.js';
 import {
   fetchModPiece,
   fetchPolarity,
@@ -142,12 +142,12 @@ export const lowerTabImage = async (props: LowerTabProps): Promise<Canvas> => {
   context.drawImage(lowerTab, 0, 0);
 
   if (compatName) {
-    context.font = '300 16px "Roboto"';
+    context.font = compatNameFont;
     context.textAlign = 'center';
     context.textBaseline = 'middle';
     context.fillStyle = textColor(tier);
 
-    context.fillText(compatName, canvas.width * 0.5, canvas.height * 0.5);
+    context.fillText(compatName.toUpperCase(), canvas.width * 0.5, canvas.height * 0.5);
   }
 
   return canvas;
