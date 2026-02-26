@@ -1,48 +1,47 @@
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
 import {
   type AvifConfig,
   type Canvas,
   createCanvas,
-  GlobalFonts,
   type Image,
   loadImage,
   type SKRSContext2D,
-} from '@napi-rs/canvas';
-import type { LevelStat, Mod } from 'warframe-items';
+} from "@napi-rs/canvas";
+import type { LevelStat, Mod } from "@wfcd/items";
 
-import { descriptionFont, modRarityMap, tierColor, titleFont } from './styling';
+import { descriptionFont, modRarityMap, tierColor, titleFont } from "./styling";
 
-const assetPath = join('.', 'genesis-assets');
+const assetPath = join(".", "genesis-assets");
 
 export const getTier = (mod: Mod) => {
-  if (mod.type.includes('Riven')) return modRarityMap.riven;
-  if (mod.name.includes('Archon')) return modRarityMap.rare;
+  if (mod.type.includes("Riven")) return modRarityMap.riven;
+  if (mod.name.includes("Archon")) return modRarityMap.rare;
 
-  return modRarityMap[mod.rarity?.toLocaleLowerCase() ?? 'common'];
+  return modRarityMap[mod.rarity?.toLocaleLowerCase() ?? "common"];
 };
 
 export const flip = async (image: Image): Promise<Image> => {
   const canvas = createCanvas(image.width, image.height);
-  const context = canvas.getContext('2d');
+  const context = canvas.getContext("2d");
 
   context.translate(image.width, 0);
   context.scale(-1, 1);
   context.drawImage(image, 0, 0);
 
-  return loadImage(await canvas.encode('png'));
+  return loadImage(await canvas.encode("png"));
 };
 
 export const fetchModPiece = async (name: string) => {
-  const filePath = join(assetPath, 'modFrames', name);
+  const filePath = join(assetPath, "modFrames", name);
   const image = await readFile(filePath);
 
   return loadImage(image);
 };
 
 export const fetchHeader = async (modSet: string): Promise<Image> => {
-  const name = modSet.split('/').reverse()[1]; // i.e /Lotus/Upgrades/Mods/Sets/Strain/StrainSetMod = Strain
+  const name = modSet.split("/").reverse()[1]; // i.e /Lotus/Upgrades/Mods/Sets/Strain/StrainSetMod = Strain
   return fetchModPiece(`${name}Header.png`);
 };
 
@@ -71,13 +70,17 @@ export interface ModBackground {
 }
 
 export const getBackground = async (tier: string): Promise<ModBackground> => {
-  const isRiven = tier === 'Omega';
+  const isRiven = tier === "Omega";
 
-  const background = isRiven ? 'LegendaryBackground.png' : `${tier}Background.png`;
+  const background = isRiven
+    ? "LegendaryBackground.png"
+    : `${tier}Background.png`;
 
-  const backer = isRiven ? 'RivenTopRightBacker.png' : `${tier}TopRightBacker.png`;
+  const backer = isRiven
+    ? "RivenTopRightBacker.png"
+    : `${tier}TopRightBacker.png`;
 
-  const lowerTab = isRiven ? 'RivenLowerTab.png' : `${tier}LowerTab.png`;
+  const lowerTab = isRiven ? "RivenLowerTab.png" : `${tier}LowerTab.png`;
 
   return {
     background: await fetchModPiece(background),
@@ -87,7 +90,7 @@ export const getBackground = async (tier: string): Promise<ModBackground> => {
 };
 
 export const fetchPolarity = async (polarity: string): Promise<Image> => {
-  const filePath = join(assetPath, 'img', 'polarities', `${polarity}.png`);
+  const filePath = join(assetPath, "img", "polarities", `${polarity}.png`);
   const image = await readFile(filePath);
 
   return loadImage(image);
@@ -96,14 +99,14 @@ export const fetchPolarity = async (polarity: string): Promise<Image> => {
 export const modDescription = (
   rank: number = 0,
   description?: string | undefined,
-  levelStats?: LevelStat[] | undefined
+  levelStats?: LevelStat[] | undefined,
 ): string | undefined => {
   if (description && description.length !== 0) return description;
 
   if (levelStats?.[rank]) {
     const { stats } = levelStats[rank];
 
-    let desc = '';
+    let desc = "";
     for (let i = 0; i < stats.length; i += 1) {
       desc = desc.concat(`${stats[i]} \n`);
     }
@@ -112,9 +115,13 @@ export const modDescription = (
   }
 };
 
-export const wrapText = (context: SKRSContext2D, text: string, maxWidth: number): string[] => {
-  const words = text.split(' ');
-  let currentLine = '';
+export const wrapText = (
+  context: SKRSContext2D,
+  text: string,
+  maxWidth: number,
+): string[] => {
+  const words = text.split(" ");
+  let currentLine = "";
   const lines = [];
 
   words.forEach((word) => {
@@ -134,19 +141,19 @@ export const wrapText = (context: SKRSContext2D, text: string, maxWidth: number)
 };
 
 export const registerFonts = () => {
-  const fontPath = join('.', 'assets', 'fonts');
-  GlobalFonts.registerFromPath(join(fontPath, 'Roboto-Light.ttf'), 'Roboto');
-  GlobalFonts.registerFromPath(join(fontPath, 'Roboto-Regular.ttf'), 'Roboto');
-  GlobalFonts.registerFromPath(join(fontPath, 'Roboto-Bold.ttf'), 'Roboto');
+  // const fontPath = join('.', 'assets', 'fonts');
+  // GlobalFonts.registerFromPath(join(fontPath, 'Roboto-Light.ttf'), 'Roboto');
+  // GlobalFonts.registerFromPath(join(fontPath, 'Roboto-Regular.ttf'), 'Roboto');
+  // GlobalFonts.registerFromPath(join(fontPath, 'Roboto-Bold.ttf'), 'Roboto');
 };
 
 export const textColor = (tier: string) => {
-  if (tier === 'Legendary') return tierColor.Silver;
+  if (tier === "Legendary") return tierColor.Silver;
 
   return tierColor[tier];
 };
 
-export type Format = 'webp' | 'jpeg' | 'avif' | 'png';
+export type Format = "webp" | "jpeg" | "avif" | "png";
 
 export interface CanvasOutput {
   quality?: number;
@@ -154,26 +161,34 @@ export interface CanvasOutput {
   cfg?: AvifConfig;
 }
 
-export const exportCanvas = async (canvas: Canvas, output: CanvasOutput = { format: 'png' }) => {
+export const exportCanvas = async (
+  canvas: Canvas,
+  output: CanvasOutput = { format: "png" },
+) => {
   const quality = output.quality || 100;
 
   try {
     switch (output.format) {
-      case 'png':
-        return await canvas.encode('png');
-      case 'webp':
-        return await canvas.encode('webp', quality);
-      case 'jpeg':
-        return await canvas.encode('jpeg', quality);
-      case 'avif':
-        return await canvas.encode('avif', output.cfg ?? { quality: 0 });
+      case "png":
+        return await canvas.encode("png");
+      case "webp":
+        return await canvas.encode("webp", quality);
+      case "jpeg":
+        return await canvas.encode("jpeg", quality);
+      case "avif":
+        return await canvas.encode("avif", output.cfg ?? { quality: 0 });
     }
   } catch {
     throw Error(`failed to export canvas as ${output.format}`);
   }
 };
 
-export const textHeight = (context: SKRSContext2D, maxWidth: number, title?: string, lines?: string[]): number => {
+export const textHeight = (
+  context: SKRSContext2D,
+  maxWidth: number,
+  title?: string,
+  lines?: string[],
+): number => {
   const tempFont = context.font;
   const bottomLineSpacing = 15;
 
@@ -182,7 +197,10 @@ export const textHeight = (context: SKRSContext2D, maxWidth: number, title?: str
   let titleMetrics: TextMetrics;
   if (title) titleMetrics = context.measureText(title);
 
-  let height = !title ? 0 : titleMetrics!.actualBoundingBoxAscent + titleMetrics!.actualBoundingBoxDescent;
+  let height = !title
+    ? 0
+    : titleMetrics!.actualBoundingBoxAscent +
+      titleMetrics!.actualBoundingBoxDescent;
 
   context.font = descriptionFont;
   if (lines) {
@@ -190,7 +208,8 @@ export const textHeight = (context: SKRSContext2D, maxWidth: number, title?: str
       const text = wrapText(context, line, maxWidth);
       text.forEach((t) => {
         const metrics = context.measureText(t);
-        height += metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+        height += metrics.actualBoundingBoxAscent +
+          metrics.actualBoundingBoxDescent;
       });
     });
   }
@@ -222,16 +241,29 @@ export const shadePixel = (pixel: RGB, percentage: number): RGB => {
   return { r: redShade, g: greenShade, b: blueShade };
 };
 
-export const tintPixel = (pixel: RGB, tint: RGB, percentage: number = 0.8): RGB => {
+export const tintPixel = (
+  pixel: RGB,
+  tint: RGB,
+  percentage: number = 0.8,
+): RGB => {
   const maxColors = 255;
 
   // Adjust these values to control darkness
   const originalWeight = 0.2;
   const brightness = (pixel.r + pixel.g + pixel.b) / 3 / maxColors;
 
-  const tintedRed = Math.min(maxColors, pixel.r * originalWeight + tint.r * brightness * percentage);
-  const tintedGreen = Math.min(maxColors, pixel.g * originalWeight + tint.g * brightness * percentage);
-  const tintedBlue = Math.min(maxColors, pixel.b * originalWeight + tint.b * brightness * percentage);
+  const tintedRed = Math.min(
+    maxColors,
+    pixel.r * originalWeight + tint.r * brightness * percentage,
+  );
+  const tintedGreen = Math.min(
+    maxColors,
+    pixel.g * originalWeight + tint.g * brightness * percentage,
+  );
+  const tintedBlue = Math.min(
+    maxColors,
+    pixel.b * originalWeight + tint.b * brightness * percentage,
+  );
 
   return { r: tintedRed, g: tintedGreen, b: tintedBlue };
 };

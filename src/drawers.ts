@@ -1,6 +1,6 @@
 import { type Canvas, createCanvas, type Image, ImageData, loadImage } from '@napi-rs/canvas';
-import type { Mod, ModSet } from 'warframe-items';
-import { find } from 'warframe-items/utilities';
+import type { Mod, ModSet } from '@wfcd/items';
+import { find } from '@wfcd/items/utilities';
 
 import { compatNameFont, descriptionFont, modRarityMap, titleFont } from './styling.js';
 import {
