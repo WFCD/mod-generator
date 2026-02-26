@@ -1,8 +1,6 @@
 import { createCanvas, loadImage } from '@napi-rs/canvas';
 import type { Mod } from '@wfcd/items';
 
-import '@fontsource-variable/roboto';
-
 import { backgroundImage, bottomImage, drawHeader, horizontalPad, shadeImage } from './drawers';
 import { modRarityMap, titleFont } from './styling';
 import {
