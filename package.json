@@ -49,14 +49,6 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "babel": {
-    "presets": ["@babel/preset-env"],
-    "plugins": ["@babel/plugin-transform-class-properties", "@babel/plugin-transform-private-methods"]
-  },
-  "c8": {
-    "reporter": ["lcov", "text"],
-    "skip-full": true
-  },
   "publishConfig": {
     "access": "public",
     "provenance": true
