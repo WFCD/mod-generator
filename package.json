@@ -4,6 +4,10 @@
   "version": "0.0.1",
   "description": "",
   "author": "SlayerOrnstein",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WFCD/mod-generator.git"
+  },
   "type": "module",
   "main": "./dist/generator.mjs",
   "types": "./dist/generator.d.mts",
