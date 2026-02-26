@@ -58,6 +58,7 @@
     "skip-full": true
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   }
 }
