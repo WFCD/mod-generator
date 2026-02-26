@@ -16,7 +16,7 @@
     "build:docs": "typedoc",
     "lint": "biome check",
     "lint:fix": "biome check --write",
-    "test": "c8 mocha tests/*.spec.ts",
+    "test": "c8 mocha",
     "prepare": "husky",
     "prepublishOnly": "tsdown"
   },
