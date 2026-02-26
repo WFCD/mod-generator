@@ -1,6 +1,5 @@
 {
   "name": "@wfcd/mod-generator",
-  "public": "true",
   "version": "0.0.1",
   "description": "",
   "author": "SlayerOrnstein",
@@ -21,7 +20,9 @@
     "lint": "biome check",
     "lint:fix": "biome check --write",
     "test": "c8 mocha tests/*.spec.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "pretest": "tsdown",
+    "prepublishOnly": "tsdown"
   },
   "license": "MIT",
   "dependencies": {
@@ -77,5 +78,8 @@
   },
   "peerDependencies": {
     "warframe-items": "^1.1269.87"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
