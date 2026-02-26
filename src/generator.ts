@@ -1,16 +1,10 @@
-import { createCanvas, loadImage } from "@napi-rs/canvas";
-import type { Mod } from "@wfcd/items";
+import { createCanvas, loadImage } from '@napi-rs/canvas';
+import type { Mod } from '@wfcd/items';
 
-import "@fontsource-variable/roboto";
+import '@fontsource-variable/roboto';
 
-import {
-  backgroundImage,
-  bottomImage,
-  drawHeader,
-  horizontalPad,
-  shadeImage,
-} from "./drawers";
-import { modRarityMap, titleFont } from "./styling";
+import { backgroundImage, bottomImage, drawHeader, horizontalPad, shadeImage } from './drawers';
+import { modRarityMap, titleFont } from './styling';
 import {
   type CanvasOutput,
   exportCanvas,
@@ -20,7 +14,7 @@ import {
   getTier,
   registerFonts,
   textColor,
-} from "./utils";
+} from './utils';
 
 export interface GenerateModProps {
   mod: Mod;
@@ -30,9 +24,7 @@ export interface GenerateModProps {
   output?: CanvasOutput;
 }
 
-export const generateCollapsed = async (
-  props: GenerateModProps,
-): Promise<Buffer<ArrayBufferLike> | undefined> => {
+export const generateCollapsed = async (props: GenerateModProps): Promise<Buffer<ArrayBufferLike> | undefined> => {
   registerFonts();
 
   const { mod, output, rank, image } = props;
@@ -40,30 +32,22 @@ export const generateCollapsed = async (
   const isRiven = tier === modRarityMap.riven;
 
   const canvas = createCanvas(isRiven ? 292 : 256, 256);
-  const context = canvas.getContext("2d");
+  const context = canvas.getContext('2d');
 
   const { cornerLights, bottom, top } = await getFrame(tier);
 
   if (mod.imageName || image) {
-    const thumb = await loadImage(
-      image ?? `https://cdn.warframestat.us/img/${mod.imageName}`,
-    );
+    const thumb = await loadImage(image ?? `https://cdn.warframestat.us/img/${mod.imageName}`);
     const thumbWidth = canvas.width - horizontalPad * 2;
     const thumbHeight = top.height / 2 + bottom.height / 2;
     const shadedImage = await shadeImage(thumb);
 
-    context.drawImage(
-      shadedImage,
-      top.width * 0.03,
-      top.height * 0.3,
-      thumbWidth,
-      thumbHeight,
-    );
+    context.drawImage(shadedImage, top.width * 0.03, top.height * 0.3, thumbWidth, thumbHeight);
   }
 
   context.fillStyle = textColor(tier);
-  context.textAlign = "center";
-  context.textBaseline = "middle";
+  context.textAlign = 'center';
+  context.textBaseline = 'middle';
   context.font = titleFont;
   context.fillText(mod.name, canvas.width * 0.5, top.height);
 
@@ -71,13 +55,7 @@ export const generateCollapsed = async (
 
   if (mod.modSet) {
     const header = await fetchHeader(mod.modSet);
-    context.drawImage(
-      await drawHeader(header, tier),
-      top.width * 0.35,
-      0,
-      header.width * 0.6,
-      header.height * 0.6,
-    );
+    context.drawImage(await drawHeader(header, tier), top.width * 0.35, 0, header.width * 0.6, header.height * 0.6);
   }
 
   const positionY = top.height * 0.5;
@@ -94,7 +72,7 @@ export const generateCollapsed = async (
         rank,
       }),
       -widthDiff / 2,
-      positionY,
+      positionY
     );
   } else {
     context.drawImage(
@@ -106,16 +84,16 @@ export const generateCollapsed = async (
         rank,
       }),
       0,
-      positionY,
+      positionY
     );
   }
 
   const outterCanvas = createCanvas(isRiven ? 292 : 256, isRiven ? 180 : 150);
-  const outterContext = outterCanvas.getContext("2d");
+  const outterContext = outterCanvas.getContext('2d');
 
   outterContext.drawImage(canvas, 0, 0);
 
-  return exportCanvas(outterCanvas, output ?? { format: "png" });
+  return exportCanvas(outterCanvas, output ?? { format: 'png' });
 };
 
 /**
@@ -136,9 +114,7 @@ export const generateCollapsed = async (
  * @param {GenerateModProps} props Properties to use when creating mod image
  * @returns {Promise<Buffer<ArrayBufferLike> | undefined>}
  */
-const generate = async (
-  props: GenerateModProps,
-): Promise<Buffer<ArrayBufferLike> | undefined> => {
+const generate = async (props: GenerateModProps): Promise<Buffer<ArrayBufferLike> | undefined> => {
   registerFonts();
 
   // All values here should be percentages based on the background size and NOT on the canvas size.
@@ -149,7 +125,7 @@ const generate = async (
   const isRiven = tier === modRarityMap.riven;
 
   const canvas = createCanvas(isRiven ? 292 : 256, 512);
-  const context = canvas.getContext("2d");
+  const context = canvas.getContext('2d');
 
   const { background, backer, lowerTab } = await getBackground(tier);
   const { cornerLights, bottom, top, sideLights } = await getFrame(tier);
@@ -187,7 +163,7 @@ const generate = async (
       background.width * 0.3,
       background.height * 0.13,
       header.width * 0.8,
-      header.height * 0.8,
+      header.height * 0.8
     );
   }
 
@@ -203,7 +179,7 @@ const generate = async (
         rank,
       }),
       -widthDiff / 2,
-      background.height * 0.65,
+      background.height * 0.65
     );
   } else {
     context.drawImage(
@@ -215,20 +191,16 @@ const generate = async (
         rank,
       }),
       centerX,
-      background.height * 0.65,
+      background.height * 0.65
     );
   }
 
   const outterCanvas = createCanvas(isRiven ? 292 : 256, 380);
-  const outterContext = outterCanvas.getContext("2d");
+  const outterContext = outterCanvas.getContext('2d');
 
-  outterContext.drawImage(
-    canvas,
-    (outterCanvas.width - canvas.width) / 2,
-    (outterCanvas.height - canvas.height) / 2,
-  );
+  outterContext.drawImage(canvas, (outterCanvas.width - canvas.width) / 2, (outterCanvas.height - canvas.height) / 2);
 
-  return exportCanvas(outterCanvas, output ?? { format: "png" });
+  return exportCanvas(outterCanvas, output ?? { format: 'png' });
 };
 
 export default generate;
