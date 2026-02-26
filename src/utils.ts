@@ -137,10 +137,7 @@ export const wrapText = (context: SKRSContext2D, text: string, maxWidth: number)
 export const registerFonts = () => {
   const nameAlies = 'Roboto';
   const require = createRequire(import.meta.url);
-  const fontPath = join(
-    require.resolve('@fontsource-variable/roboto'),
-    '../../files/roboto-latin-wght-normal.woff2'
-  );
+  const fontPath = join(require.resolve('@fontsource-variable/roboto'), '../../files/roboto-latin-wght-normal.woff2');
   if (!GlobalFonts.has(nameAlies)) GlobalFonts.registerFromPath(fontPath, nameAlies);
 };
 

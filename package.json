@@ -10,10 +10,7 @@
   "type": "module",
   "main": "./dist/generator.mjs",
   "types": "./dist/generator.d.mts",
-  "files": [
-    "dist/",
-    "LICENSE"
-  ],
+  "files": ["dist/", "LICENSE"],
   "scripts": {
     "build": "tsdown",
     "build:docs": "typedoc",
@@ -53,19 +50,11 @@
     "node": ">=20.0.0"
   },
   "babel": {
-    "presets": [
-      "@babel/preset-env"
-    ],
-    "plugins": [
-      "@babel/plugin-transform-class-properties",
-      "@babel/plugin-transform-private-methods"
-    ]
+    "presets": ["@babel/preset-env"],
+    "plugins": ["@babel/plugin-transform-class-properties", "@babel/plugin-transform-private-methods"]
   },
   "c8": {
-    "reporter": [
-      "lcov",
-      "text"
-    ],
+    "reporter": ["lcov", "text"],
     "skip-full": true
   },
   "publishConfig": {
