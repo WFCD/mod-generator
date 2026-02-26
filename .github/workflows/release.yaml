@@ -2,7 +2,7 @@ name: Release
 on:
   push:
     branches:
-      - npm-deploy
+      - main
 
 jobs:
   verify:
@@ -36,6 +36,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
+          fetch-depth: 0
           submodules: recursive
       - uses: actions/setup-node@v6
         with:
