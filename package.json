@@ -20,7 +20,7 @@
     "lint": "biome check",
     "lint:fix": "biome check --write",
     "test": "c8 mocha tests/*.spec.ts",
-    "prepare": "husky"
+    "prepare": "husky && tsdown"
   },
   "license": "MIT",
   "dependencies": {
