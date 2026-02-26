@@ -1,6 +1,5 @@
 {
   "name": "@wfcd/mod-generator",
-  "public": "true",
   "version": "0.0.1",
   "description": "",
   "author": "SlayerOrnstein",
@@ -77,5 +76,8 @@
   },
   "peerDependencies": {
     "warframe-items": "^1.1269.87"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
