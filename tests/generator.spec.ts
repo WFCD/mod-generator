@@ -3,9 +3,9 @@ import { existsSync, mkdirSync } from 'node:fs';
 import { readdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import type { Mod } from '@wfcd/items';
+import { find } from '@wfcd/items/utilities';
 import { describe, test } from 'mocha';
-import type { Mod } from 'warframe-items';
-import { find } from 'warframe-items/utilities';
 
 import generate, { generateCollapsed } from '../src/generator.js';
 import type { Format } from '../src/utils.js';

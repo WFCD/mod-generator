@@ -1,5 +1,5 @@
 import { createCanvas, loadImage } from '@napi-rs/canvas';
-import type { Mod } from 'warframe-items';
+import type { Mod } from '@wfcd/items';
 
 import { backgroundImage, bottomImage, drawHeader, horizontalPad, shadeImage } from './drawers';
 import { modRarityMap, titleFont } from './styling';

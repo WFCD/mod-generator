@@ -1,0 +1,6 @@
+exit: true
+extension: ['ts']
+spec: 'tests/**/*.spec.ts'
+timeout: 20000
+node-option:
+  - 'import=tsx/esm'

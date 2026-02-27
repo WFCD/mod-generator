@@ -8,7 +8,7 @@ export default {
     "prettier --write"
   ],
   "package*.json": [
-    "prettier --write",
+    "biome format --write",
     "npm -q --no-progress dedupe"
   ]
 }

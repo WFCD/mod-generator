@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { join } from 'node:path';
 
 import {
@@ -10,7 +11,7 @@ import {
   loadImage,
   type SKRSContext2D,
 } from '@napi-rs/canvas';
-import type { LevelStat, Mod } from 'warframe-items';
+import type { LevelStat, Mod } from '@wfcd/items';
 
 import { descriptionFont, modRarityMap, tierColor, titleFont } from './styling';
 
@@ -134,10 +135,10 @@ export const wrapText = (context: SKRSContext2D, text: string, maxWidth: number)
 };
 
 export const registerFonts = () => {
-  const fontPath = join('.', 'assets', 'fonts');
-  GlobalFonts.registerFromPath(join(fontPath, 'Roboto-Light.ttf'), 'Roboto');
-  GlobalFonts.registerFromPath(join(fontPath, 'Roboto-Regular.ttf'), 'Roboto');
-  GlobalFonts.registerFromPath(join(fontPath, 'Roboto-Bold.ttf'), 'Roboto');
+  const nameAlies = 'Roboto';
+  const require = createRequire(import.meta.url);
+  const fontPath = join(require.resolve('@fontsource-variable/roboto'), '../../files/roboto-latin-wght-normal.woff2');
+  if (!GlobalFonts.has(nameAlies)) GlobalFonts.registerFromPath(fontPath, nameAlies);
 };
 
 export const textColor = (tier: string) => {
