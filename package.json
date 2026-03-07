@@ -41,7 +41,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "mocha": "^11.7.5",
-    "tsdown": "^0.20.3",
+    "tsdown": "^0.21.0",
     "tsx": "4.21.0",
     "typedoc": "^0.28.17",
     "typescript": "^5.9.3"
