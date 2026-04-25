@@ -10,10 +10,7 @@
   "type": "module",
   "main": "./dist/generator.mjs",
   "types": "./dist/generator.d.mts",
-  "files": [
-    "dist/",
-    "LICENSE"
-  ],
+  "files": ["dist/", "LICENSE"],
   "scripts": {
     "build": "tsdown",
     "build:docs": "typedoc",
