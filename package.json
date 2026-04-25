@@ -27,7 +27,7 @@
     "@wfcd/items": "^1.1272.126"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.12",
+    "@biomejs/biome": "2.4.13",
     "@commitlint/cli": "^20.4.2",
     "@commitlint/config-conventional": "^20.4.2",
     "@commitlint/types": "^20.4.0",
