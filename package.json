@@ -23,7 +23,7 @@
   "license": "MIT",
   "dependencies": {
     "@fontsource-variable/roboto": "^5.2.10",
-    "@napi-rs/canvas": "^0.1.94",
+    "@napi-rs/canvas": "^1.0.0",
     "@wfcd/items": "^1.1272.126"
   },
   "devDependencies": {
