@@ -1,6 +1,6 @@
 {
   "exclude": [
-    "node_modules",
+    "node_modules"
   ],
   "compilerOptions": {
     "module": "esnext",
@@ -10,11 +10,6 @@
     "esModuleInterop": true,
     "isolatedModules": true,
     "skipLibCheck": true,
-    "baseUrl": "./",
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    }
+    "types": ["node"]
   }
 }
