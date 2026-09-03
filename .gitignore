@@ -6,3 +6,6 @@ assets/tests
 coverage/
 .eslintcache
 dist/
+
+# MacOS assets
+.DS_Store
