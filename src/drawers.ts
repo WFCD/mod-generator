@@ -199,11 +199,12 @@ interface BackgroundProps {
 
 /**
  * Draws a mod background complete with thumbnail, text, and sidelights.
- * @param {BackerImageProps} props Props used in create the background image
+ * @param {BackerImageProps} backgroundProps Props used in create the background image
  * @returns {Promise<Image>}
  */
-export const backgroundImage = async (props: BackgroundProps): Promise<Canvas> => {
-  const { background, sideLights, backer, lowerTab, bottom, mod, rank, image, setBonus } = props;
+export const backgroundImage = async (backgroundProps: BackgroundProps): Promise<Canvas> => {
+  const { background, sideLights, backer, lowerTab, bottom, mod, rank, image } = backgroundProps;
+  const setBonus = backgroundProps.setBonus ?? 0;
   const tier = getTier(mod);
   const canvas = createCanvas(background.width, background.height);
   const context = canvas.getContext('2d');
@@ -211,7 +212,7 @@ export const backgroundImage = async (props: BackgroundProps): Promise<Canvas> =
   context.drawImage(background, 0, 0);
 
   const maxWidth = background.width * 0.85;
-  const description = modDescription(rank ?? 0, mod.description, mod.levelStats);
+  const description = modDescription(rank, mod.description, mod.levelStats);
   const lines = description?.split('\n');
 
   const modSetProgressHeight = 12;
@@ -259,7 +260,7 @@ export const backgroundImage = async (props: BackgroundProps): Promise<Canvas> =
     });
 
     if (modSet) {
-      const stats = Math.min(setBonus ?? 0, modSet.stats.length - 1);
+      const stats = Math.min(setBonus, modSet.stats.length - 1);
       const modSetPosition = start - lineSpacing;
       const segment = { width: canvas.width * 0.12, height: modSetProgressHeight };
       context.strokeStyle = context.fillStyle;
@@ -267,7 +268,7 @@ export const backgroundImage = async (props: BackgroundProps): Promise<Canvas> =
       let startPosition = canvas.width / modSet.stats.length;
       for (let i = 0; i < modSet.stats.length; i++) {
         // default to negative to imply disabled
-        const bonus = (setBonus ?? 0) - 1;
+        const bonus = setBonus - 1;
         if (bonus < i) {
           context.strokeRect(startPosition, modSetPosition, segment.width, segment.height);
         } else {
