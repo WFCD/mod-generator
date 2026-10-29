@@ -27,15 +27,13 @@ describe('Generate a mod', () => {
     const testPath = join('.', 'assets', 'tests');
     if (!existsSync(testPath)) mkdirSync(testPath, { recursive: true });
 
-    for (let i = 0; i <= mods.length; i += 1) {
+    for (let i = 0; i < mods.length; i += 1) {
       await Promise.all(
         formats.map(async (format) => {
           const imagePath = join(testPath, format);
           if (!existsSync(imagePath)) mkdirSync(imagePath, { recursive: true });
 
           const mod = find.findItem(mods[i]) as Mod;
-
-          if (!mod) return;
           const modFull = await generate({ mod, rank: mod.fusionLimit, output: { format } });
           const modMin = await generateCollapsed({ mod, rank: mod.fusionLimit, output: { format } });
           assert.ok(modFull);
