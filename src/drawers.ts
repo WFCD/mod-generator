@@ -368,7 +368,7 @@ export const bottomImage = async (props: BottomImageProps): Promise<Canvas> => {
   const slotHeight = isRare ? canvas.height * 0.82 : canvas.height * 0.72;
 
   // At the time of writing I saw /Lotus/Upgrades/Mods/Randomized/LotusArchgunRandomModRare with a fusionLimit of 32756
-  const maxRank = max > 10 ? 10 : max;
+  const maxRank = Math.min(10, max);
   if (rank === maxRank) context.drawImage(rankCompleted, 0, slotLineHeight);
 
   let rankSlotStart = canvas.width * 0.29;

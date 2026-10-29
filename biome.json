@@ -1,9 +1,9 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.10/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.3/schema.json",
   "vcs": { "enabled": false, "clientKind": "git", "useIgnoreFile": false },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["tests/**/*.spec.ts", "src/**/*.ts", "package*.json"]
+    "includes": ["tests/**/*.spec.ts", "src/**/*.ts", "package*.json", "tsdown.config.ts"]
   },
   "formatter": {
     "enabled": true,
