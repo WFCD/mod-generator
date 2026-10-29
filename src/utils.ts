@@ -1,6 +1,8 @@
+import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import {
   type AvifConfig,
@@ -15,7 +17,8 @@ import type { LevelStat, Mod } from '@wfcd/items';
 
 import { descriptionFont, modRarityMap, tierColor, titleFont } from './styling';
 
-const assetPath = join('.', 'genesis-assets');
+const modulePath = join(dirname(fileURLToPath(import.meta.url)), 'genesis-assets');
+const assetPath = existsSync(modulePath) ? modulePath : join('.', 'genesis-assets');
 
 export const getTier = (mod: Mod) => {
   if (mod.type.includes('Riven')) return modRarityMap.riven;

@@ -22,11 +22,12 @@ export interface GenerateModProps {
   output?: CanvasOutput;
 }
 
-export const generateCollapsed = async (props: GenerateModProps): Promise<Buffer<ArrayBufferLike> | undefined> => {
+export const generateCollapsed = async (props: GenerateModProps): Promise<Buffer<ArrayBufferLike>> => {
   registerFonts();
 
-  const { mod, output, rank, image } = props;
+  const { mod, output, image } = props;
   const tier = getTier(mod);
+  const rank = props.rank ?? mod.fusionLimit;
   const isRiven = tier === modRarityMap.riven;
 
   const canvas = createCanvas(isRiven ? 292 : 256, 256);
@@ -91,7 +92,7 @@ export const generateCollapsed = async (props: GenerateModProps): Promise<Buffer
 
   outterContext.drawImage(canvas, 0, 0);
 
-  return exportCanvas(outterCanvas, output ?? { format: 'png' });
+  return await exportCanvas(outterCanvas, output ?? { format: 'png' });
 };
 
 /**
@@ -109,16 +110,17 @@ export const generateCollapsed = async (props: GenerateModProps): Promise<Buffer
  *
  * Notes:
  *  - Archon mods will use the gold mod frame
- * @param {GenerateModProps} props Properties to use when creating mod image
- * @returns {Promise<Buffer<ArrayBufferLike> | undefined>}
+ * @param {GenerateModProps} options Properties to use when creating mod image
+ * @returns {Promise<Buffer<ArrayBufferLike>>}
  */
-const generate = async (props: GenerateModProps): Promise<Buffer<ArrayBufferLike> | undefined> => {
+const generate = async (options: GenerateModProps): Promise<Buffer<ArrayBufferLike>> => {
   registerFonts();
 
   // All values here should be percentages based on the background size and NOT on the canvas size.
   // The reason for this is that special mod pieces have a bigger width then the base 256 width of the background,
   // so the canvas has to be big enough to keep those parts in view.
-  const { mod, output, rank, setBonus, image } = props;
+  const { mod, output, setBonus, image } = options;
+  const rank = options.rank ?? mod.fusionLimit;
   const tier = getTier(mod);
   const isRiven = tier === modRarityMap.riven;
 
@@ -198,7 +200,7 @@ const generate = async (props: GenerateModProps): Promise<Buffer<ArrayBufferLike
 
   outterContext.drawImage(canvas, (outterCanvas.width - canvas.width) / 2, (outterCanvas.height - canvas.height) / 2);
 
-  return exportCanvas(outterCanvas, output ?? { format: 'png' });
+  return await exportCanvas(outterCanvas, output ?? { format: 'png' });
 };
 
 export default generate;

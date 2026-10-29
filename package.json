@@ -24,10 +24,10 @@
   "dependencies": {
     "@fontsource-variable/roboto": "^5.2.10",
     "@napi-rs/canvas": "^1.0.0",
-    "@wfcd/items": "^1.1272.126"
+    "@wfcd/items": "^1.1276.43"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.15",
+    "@biomejs/biome": "2.6.3",
     "@commitlint/cli": "^21.0.0",
     "@commitlint/config-conventional": "^21.0.0",
     "@commitlint/types": "^21.0.0",
