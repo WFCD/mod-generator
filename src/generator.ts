@@ -22,12 +22,12 @@ export interface GenerateModProps {
   output?: CanvasOutput;
 }
 
-export const generateCollapsed = async (props: GenerateModProps): Promise<Buffer<ArrayBufferLike>> => {
+export const generateCollapsed = async (config: GenerateModProps): Promise<Buffer<ArrayBufferLike>> => {
   registerFonts();
 
-  const { mod, output, image } = props;
+  const { mod, output, image } = config;
   const tier = getTier(mod);
-  const rank = props.rank ?? mod.fusionLimit;
+  const rank = Math.min(config.rank ?? mod.fusionLimit, mod.fusionLimit, 10);
   const isRiven = tier === modRarityMap.riven;
 
   const canvas = createCanvas(isRiven ? 292 : 256, 256);
@@ -120,7 +120,7 @@ const generate = async (options: GenerateModProps): Promise<Buffer<ArrayBufferLi
   // The reason for this is that special mod pieces have a bigger width then the base 256 width of the background,
   // so the canvas has to be big enough to keep those parts in view.
   const { mod, output, setBonus, image } = options;
-  const rank = options.rank ?? mod.fusionLimit;
+  const rank = Math.min(options.rank ?? mod.fusionLimit, mod.fusionLimit, 10);
   const tier = getTier(mod);
   const isRiven = tier === modRarityMap.riven;
 

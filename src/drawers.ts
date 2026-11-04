@@ -101,7 +101,7 @@ interface BackerImageProps {
   tier: string;
   base: number;
   polarity: string;
-  rank?: number;
+  rank: number;
 }
 
 /**
@@ -138,7 +138,7 @@ export const backerImage = async (props: BackerImageProps): Promise<Canvas> => {
     context.drawImage(await drawPolarity(tier, polarity), canvas.width * 0.6, canvas.height * 0.2, 16, 16);
   }
 
-  const drain = `${base < 0 ? '+' : ''}${Math.abs(base) + (rank ?? 0)}`;
+  const drain = `${base < 0 ? '+' : ''}${Math.abs(base) + rank}`;
   if (drain.length >= 2) {
     context.fillText(`${drain}`, canvas.width * 0.2, drainHeight);
   } else {
@@ -191,8 +191,7 @@ interface BackgroundProps {
   lowerTab: Image;
   bottom: { width: number; height: number };
   mod: Mod;
-  rank?: number;
-  modSetRank?: number;
+  rank: number;
   setBonus?: number;
   image?: string;
 }

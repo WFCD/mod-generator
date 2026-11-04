@@ -98,7 +98,7 @@ export const fetchPolarity = async (polarity: string): Promise<Image> => {
 };
 
 export const modDescription = (
-  rank: number = 0,
+  rank: number,
   description?: string | undefined,
   levelStats?: LevelStat[] | undefined
 ): string | undefined => {
