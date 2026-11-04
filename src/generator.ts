@@ -22,12 +22,12 @@ export interface GenerateModProps {
   output?: CanvasOutput;
 }
 
-export const generateCollapsed = async (props: GenerateModProps): Promise<Buffer<ArrayBufferLike>> => {
+export const generateCollapsed = async (config: GenerateModProps): Promise<Buffer<ArrayBufferLike>> => {
   registerFonts();
 
-  const { mod, output, image } = props;
+  const { mod, output, image } = config;
   const tier = getTier(mod);
-  const rank = props.rank ?? mod.fusionLimit;
+  const rank = Math.min(config.rank ?? mod.fusionLimit, mod.fusionLimit, 10);
   const isRiven = tier === modRarityMap.riven;
 
   const canvas = createCanvas(isRiven ? 292 : 256, 256);
@@ -36,6 +36,7 @@ export const generateCollapsed = async (props: GenerateModProps): Promise<Buffer
   const { cornerLights, bottom, top } = await getFrame(tier);
 
   if (mod.imageName || image) {
+    33;
     const thumb = await loadImage(image ?? `https://cdn.warframestat.us/img/${mod.imageName}`);
     const thumbWidth = canvas.width - horizontalPad * 2;
     const thumbHeight = top.height / 2 + bottom.height / 2;
