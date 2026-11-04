@@ -36,7 +36,6 @@ export const generateCollapsed = async (config: GenerateModProps): Promise<Buffe
   const { cornerLights, bottom, top } = await getFrame(tier);
 
   if (mod.imageName || image) {
-    33;
     const thumb = await loadImage(image ?? `https://cdn.warframestat.us/img/${mod.imageName}`);
     const thumbWidth = canvas.width - horizontalPad * 2;
     const thumbHeight = top.height / 2 + bottom.height / 2;
