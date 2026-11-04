@@ -120,7 +120,7 @@ const generate = async (options: GenerateModProps): Promise<Buffer<ArrayBufferLi
   // The reason for this is that special mod pieces have a bigger width then the base 256 width of the background,
   // so the canvas has to be big enough to keep those parts in view.
   const { mod, output, setBonus, image } = options;
-  const rank = options.rank ?? mod.fusionLimit;
+  const rank = Math.min(options.rank ?? mod.fusionLimit, mod.fusionLimit, 10);
   const tier = getTier(mod);
   const isRiven = tier === modRarityMap.riven;
 
