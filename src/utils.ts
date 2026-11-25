@@ -4,21 +4,22 @@ import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import {
-  type AvifConfig,
-  type Canvas,
-  createCanvas,
-  GlobalFonts,
-  type Image,
-  loadImage,
-  type SKRSContext2D,
-} from '@napi-rs/canvas';
 import type { LevelStat, Mod } from '@wfcd/items';
+import { Canvas, FontLibrary, type Image, loadImage } from 'skia-canvas';
 
-import { descriptionFont, modRarityMap, tierColor, titleFont } from './styling';
+import {
+  defaultFontFamily,
+  descriptionTextOptions,
+  modRarityMap,
+  modSetProgressHeight,
+  modTypes,
+  tierColor,
+  titleTextOptions,
+} from './styling';
+import type { ModAssets, ModCanvasProps, Size, TextOptions } from './types';
 
-const modulePath = join(dirname(fileURLToPath(import.meta.url)), 'genesis-assets');
-const assetPath = existsSync(modulePath) ? modulePath : join('.', 'genesis-assets');
+const modulePath = join(dirname(fileURLToPath(import.meta.url)), 'genesis-assets', 'img');
+const assetPath = existsSync(modulePath) ? modulePath : join('.', 'genesis-assets', 'img');
 
 export const getTier = (mod: Mod) => {
   if (mod.type.includes('Riven')) return modRarityMap.riven;
@@ -28,73 +29,47 @@ export const getTier = (mod: Mod) => {
 };
 
 export const flip = async (image: Image): Promise<Image> => {
-  const canvas = createCanvas(image.width, image.height);
+  const canvas = new Canvas(image.width, image.height);
   const context = canvas.getContext('2d');
 
   context.translate(image.width, 0);
   context.scale(-1, 1);
   context.drawImage(image, 0, 0);
 
-  return loadImage(await canvas.encode('png'));
+  return loadImage(await canvas.png);
 };
 
 export const fetchModPiece = async (name: string) => {
-  const filePath = join(assetPath, 'modFrames', name);
+  const filePath = join(assetPath, 'mod_assets', name);
   const image = await readFile(filePath);
 
   return loadImage(image);
 };
 
-export const fetchHeader = async (modSet: string): Promise<Image> => {
-  const name = modSet.split('/').reverse()[1]; // i.e /Lotus/Upgrades/Mods/Sets/Strain/StrainSetMod = Strain
-  return fetchModPiece(`${name}Header.png`);
-};
+export const fetchModAssets = async (tier: string, polarity: string, modSet?: string): Promise<ModAssets> => {
+  const header = modSet?.split('/').reverse()[1]; // i.e /Lotus/Upgrades/Mods/Sets/Strain/StrainSetMod = Strain
+  const assets = modTypes[tier.toLowerCase()];
 
-export interface ModFrame {
-  top: Image;
-  sideLights: Image;
-  bottom: Image;
-  cornerLights: Image;
-}
-
-export const getFrame = async (tier: string): Promise<ModFrame> => {
-  return {
-    cornerLights: await fetchModPiece(`${tier}CornerLights.png`),
-    bottom: await fetchModPiece(`${tier}FrameBottom.png`),
-    top: await fetchModPiece(`${tier}FrameTop.png`),
-    sideLights: await fetchModPiece(`${tier}SideLight.png`),
-  };
-};
-
-// backer is drawn under the frame and over the thumbnail.
-// So we want to draw at the same time we draw the background
-export interface ModBackground {
-  background: Image;
-  backer: Image;
-  lowerTab: Image;
-}
-
-export const getBackground = async (tier: string): Promise<ModBackground> => {
-  const isRiven = tier === 'Omega';
-
-  const background = isRiven ? 'LegendaryBackground.png' : `${tier}Background.png`;
-
-  const backer = isRiven ? 'RivenTopRightBacker.png' : `${tier}TopRightBacker.png`;
-
-  const lowerTab = isRiven ? 'RivenLowerTab.png' : `${tier}LowerTab.png`;
-
-  return {
-    background: await fetchModPiece(background),
-    backer: await fetchModPiece(backer),
-    lowerTab: await fetchModPiece(lowerTab),
-  };
-};
-
-export const fetchPolarity = async (polarity: string): Promise<Image> => {
-  const filePath = join(assetPath, 'img', 'polarities', `${polarity}.png`);
+  const filePath = join(assetPath, 'polarities', `${polarity}.png`);
   const image = await readFile(filePath);
 
-  return loadImage(image);
+  const cornerLight = await fetchModPiece(`${assets.cornerLights}.png`);
+  const sideLight = await fetchModPiece(`${assets.sideLights}.png`);
+
+  return {
+    background: await fetchModPiece(`${assets.background}.png`),
+    backer: await fetchModPiece(`${assets.backer}.png`),
+    frameTop: await fetchModPiece(`${assets.frameTop}.png`),
+    frameBottom: await fetchModPiece(`${assets.frameBottom}.png`),
+    cornerLights: { left: await flip(cornerLight), right: cornerLight },
+    sideLights: { left: await flip(sideLight), right: sideLight },
+    compatTab: await fetchModPiece(`${assets.compatTab}.png`),
+    header: header ? await fetchModPiece(`${header}Header.png`) : undefined,
+    polarity: await loadImage(image),
+    rankSlotEmpy: await fetchModPiece('RankSlotEmpty.png'),
+    rankCompleted: await fetchModPiece('RankCompleteLine.png'),
+    rankSlotActive: await fetchModPiece('RankSlotActive.png'),
+  };
 };
 
 export const modDescription = (
@@ -102,105 +77,81 @@ export const modDescription = (
   description?: string | undefined,
   levelStats?: LevelStat[] | undefined
 ): string | undefined => {
-  if (description && description.length !== 0) return description;
+  let desc: string | undefined;
+  if (description && description.length !== 0) desc = description;
 
   if (levelStats?.[rank]) {
     const { stats } = levelStats[rank];
 
-    let desc = '';
+    desc = '';
     for (let i = 0; i < stats.length; i += 1) {
-      desc = desc.concat(`${stats[i]} \n`);
+      desc = desc.concat(`${stats[i]}\n`);
     }
-
-    return desc;
   }
+
+  return desc?.replaceAll(/<\w+>|/g, '').replaceAll(/\\n/g, '\n');
 };
 
-export const wrapText = (context: SKRSContext2D, text: string, maxWidth: number): string[] => {
-  const words = text.split(' ');
-  let currentLine = '';
-  const lines = [];
+const createMeasureContext = ({ scale, fontWeight, size }: TextOptions) => {
+  const c = new Canvas(1, 1).getContext('2d');
+  c.font = `${fontWeight} ${size * scale}px ${defaultFontFamily}`;
+  c.textWrap = true; // needed so measureText populates `lines`
+  return c;
+};
 
-  words.forEach((word) => {
-    const line = `${currentLine} ${word}`;
-    const lineWidth = context.measureText(line).width;
+export const wrapText = (text: string, textOptions: TextOptions, maxWidth: number): string[] => {
+  const temp = createMeasureContext(textOptions);
+  const { lines } = temp.measureText(text, maxWidth);
+  return lines.map((line) => text.slice(line.startIndex, line.endIndex).trimEnd());
+};
 
-    if (lineWidth > maxWidth) {
-      lines.push(currentLine);
-      currentLine = word;
-    } else {
-      currentLine = line;
-    }
-  });
+export const textHeight = (text: string, maxWidth: number, textOptions: TextOptions): number => {
+  const { scale } = textOptions;
+  const temp = createMeasureContext(textOptions);
+  temp.textWrap = false;
 
-  lines.push(currentLine);
-  return lines;
+  const wrapped = wrapText(text, textOptions, maxWidth * scale);
+  const total = wrapped.reduce((sum, line) => {
+    const metric = temp.measureText(line);
+    return sum + metric.actualBoundingBoxAscent + metric.actualBoundingBoxDescent;
+  }, 0);
+
+  return total / scale;
 };
 
 export const registerFonts = () => {
   const nameAlies = 'Roboto';
   const require = createRequire(import.meta.url);
-  const fontPath = join(require.resolve('@fontsource-variable/roboto'), '../../files/roboto-latin-wght-normal.woff2');
-  if (!GlobalFonts.has(nameAlies)) GlobalFonts.registerFromPath(fontPath, nameAlies);
+  const fontPath = join(
+    require.resolve('@fontsource-variable/roboto'),
+    '../../files/roboto-latin-standard-normal.woff2'
+  );
+  if (!FontLibrary.has(nameAlies)) FontLibrary.use(fontPath, nameAlies);
+};
+
+export const modTextHeight = (
+  padding: number,
+  maxWidth: number,
+  name: string,
+  description?: string,
+  modSet?: string
+) => {
+  const titleHeight = textHeight(name, maxWidth, titleTextOptions);
+  const descriptionHeight = description ? textHeight(description, maxWidth, descriptionTextOptions) : 0;
+  const mainHeight = titleHeight + descriptionHeight + padding * 2;
+
+  if (modSet) {
+    const modSetDescriptionHeight = textHeight(modSet, maxWidth, descriptionTextOptions);
+    return mainHeight + modSetProgressHeight + modSetDescriptionHeight - padding;
+  }
+
+  return mainHeight;
 };
 
 export const textColor = (tier: string) => {
   if (tier === 'Legendary') return tierColor.Silver;
 
   return tierColor[tier];
-};
-
-export type Format = 'webp' | 'jpeg' | 'avif' | 'png';
-
-export interface CanvasOutput {
-  quality?: number;
-  format: Format;
-  cfg?: AvifConfig;
-}
-
-export const exportCanvas = async (canvas: Canvas, output: CanvasOutput = { format: 'png' }) => {
-  const quality = output.quality || 100;
-
-  try {
-    switch (output.format) {
-      case 'png':
-        return await canvas.encode('png');
-      case 'webp':
-        return await canvas.encode('webp', quality);
-      case 'jpeg':
-        return await canvas.encode('jpeg', quality);
-      case 'avif':
-        return await canvas.encode('avif', output.cfg ?? { quality: 0 });
-    }
-  } catch {
-    throw Error(`failed to export canvas as ${output.format}`);
-  }
-};
-
-export const textHeight = (context: SKRSContext2D, maxWidth: number, title?: string, lines?: string[]): number => {
-  const tempFont = context.font;
-  const bottomLineSpacing = 15;
-
-  context.font = titleFont;
-
-  let titleMetrics: TextMetrics;
-  if (title) titleMetrics = context.measureText(title);
-
-  let height = !title ? 0 : titleMetrics!.actualBoundingBoxAscent + titleMetrics!.actualBoundingBoxDescent;
-
-  context.font = descriptionFont;
-  if (lines) {
-    lines.forEach((line) => {
-      const text = wrapText(context, line, maxWidth);
-      text.forEach((t) => {
-        const metrics = context.measureText(t);
-        height += metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
-      });
-    });
-  }
-
-  context.font = tempFont;
-  return height + bottomLineSpacing;
 };
 
 export interface RGB {
@@ -238,4 +189,64 @@ export const tintPixel = (pixel: RGB, tint: RGB, percentage: number = 0.8): RGB 
   const tintedBlue = Math.min(maxColors, pixel.b * originalWeight + tint.b * brightness * percentage);
 
   return { r: tintedRed, g: tintedGreen, b: tintedBlue };
+};
+
+export const calCanvasProps = (canvasSize: Size, backgroundSize: Size): ModCanvasProps => {
+  const x = (canvasSize.width - backgroundSize.width) / 2;
+  const y = (canvasSize.height - backgroundSize.height) / 2;
+  return { canvas: canvasSize, background: backgroundSize, centerX: x, centerY: y };
+};
+
+// MIT http://rem.mit-license.org
+export const trimCanvas = (canvas: Canvas, padding: number = 0): Canvas => {
+  const context = canvas.getContext('2d');
+  const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+  const data = pixels.data;
+  const bound: { top?: number; left?: number; right?: number; bottom?: number } = {};
+
+  var i: number, x: number, y: number;
+
+  // Iterate over every pixel to find the highest
+  // and where it ends on every axis ()
+  for (i = 0; i < data.length; i += 4) {
+    if (data[i + 3] !== 0) {
+      x = (i / 4) % canvas.width;
+      y = ~~(i / 4 / canvas.width);
+
+      if (bound.top === undefined) {
+        bound.top = y;
+      }
+
+      if (bound.left === undefined) {
+        bound.left = x;
+      } else if (x < bound.left) {
+        bound.left = x;
+      }
+
+      if (bound.right === undefined) {
+        bound.right = x;
+      } else if (bound.right < x) {
+        bound.right = x;
+      }
+
+      if (bound.bottom === undefined) {
+        bound.bottom = y;
+      } else if (bound.bottom < y) {
+        bound.bottom = y;
+      }
+    }
+  }
+
+  const safeBound = (bound?: number) => bound ?? 0;
+
+  // Calculate the height and width of the content
+  const trimHeight = safeBound(bound.bottom) - safeBound(bound.top);
+  const trimWidth = safeBound(bound.right) - safeBound(bound.left);
+  const trimmed = context.getImageData(safeBound(bound.left), safeBound(bound.top), trimWidth, trimHeight);
+
+  const copy = new Canvas(trimWidth + padding, trimHeight + padding).getContext('2d');
+  copy.putImageData(trimmed, padding / 2, padding / 2);
+
+  // Return trimmed canvas
+  return copy.canvas;
 };

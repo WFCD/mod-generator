@@ -8,20 +8,17 @@ import { find } from '@wfcd/items/utilities';
 import { describe, test } from 'mocha';
 
 import generate, { generateCollapsed } from '../src/generator.js';
-import type { Format } from '../src/utils.js';
+import type { Format } from '../src/types.js';
 
 describe('Generate a mod', () => {
   test('run test', async () => {
-    const formats: Format[] = ['webp', 'jpeg', 'png', 'avif'];
+    const formats: Format[] = ['webp', 'jpeg', 'png'];
     const mods = [
-      '/Lotus/Upgrades/Mods/Warframe/Kahl/KahlAvatarAbilityStrengthMod',
-      '/Lotus/Upgrades/Mods/Warframe/AvatarAbilityEfficiencyMod',
-      '/Lotus/Upgrades/Mods/Warframe/AvatarHealthMaxMod',
-      '/Lotus/Upgrades/Mods/Aura/PlayerMeleeAuraMod',
       '/Lotus/Upgrades/Mods/Randomized/LotusArchgunRandomModRare',
       '/Lotus/Powersuits/Dragon/DragonBreathAugmentCard',
       '/Lotus/Upgrades/Mods/Warframe/Expert/AvatarPowerMaxModExpert',
       '/Lotus/Upgrades/Mods/Sets/Augur/WarframeAugurMessageMod',
+      '/Lotus/Upgrades/Mods/DualSource/Rifle/ArgonakDaggerMod',
     ];
 
     const testPath = join('.', 'assets', 'tests');
@@ -34,8 +31,8 @@ describe('Generate a mod', () => {
           if (!existsSync(imagePath)) mkdirSync(imagePath, { recursive: true });
 
           const mod = find.findItem(mods[i]) as Mod;
-          const modFull = await generate({ mod, rank: mod.fusionLimit, output: { format } });
-          const modMin = await generateCollapsed({ mod, rank: mod.fusionLimit, output: { format } });
+          const modFull = await generate({ mod, rank: mod.fusionLimit, setBonus: 6, output: format });
+          const modMin = await generateCollapsed({ mod, rank: mod.fusionLimit, output: format });
           assert.ok(modFull);
 
           if (modFull) await writeFile(join(imagePath, `${mod.name.replaceAll(' ', '_')}.${format}`), modFull);

@@ -1,33 +1,45 @@
-import { type Canvas, createCanvas, type Image, ImageData, loadImage } from '@napi-rs/canvas';
-import type { Mod, ModSet } from '@wfcd/items';
+import type { ModSet } from '@wfcd/items';
 import { find } from '@wfcd/items/utilities';
+import { Canvas, type CanvasRenderingContext2D, type Image, ImageData, loadImage } from 'skia-canvas';
 
-import { compatNameFont, descriptionFont, modRarityMap, titleFont } from './styling.js';
 import {
-  fetchModPiece,
-  fetchPolarity,
-  flip,
+  comatTextOptions,
+  defaultFontFamily,
+  descriptionTextOptions,
+  drainTextOptions,
+  lineHeight,
+  modRarityMap,
+  titleTextOptions,
+} from './styling.js';
+import type {
+  BackerProperties,
+  BackgroundProps,
+  BottomFrameProps,
+  CompatTabProps,
+  FrameProperties,
+  TextOptions,
+  TopFrameProps,
+} from './types.js';
+import {
   getTier,
   hexToRGB,
   modDescription,
+  modTextHeight,
   shadePixel,
   textColor,
-  textHeight,
   tintPixel,
   wrapText,
 } from './utils.js';
 
 export const verticalPad = 70;
-export const horizontalPad = 8;
+export const padding = 8;
 
-const drawPolarity = async (tier: string, polarity: string): Promise<Canvas> => {
-  const image = await fetchPolarity(polarity);
-
+const drawPolarity = async (tier: string, polarity: Image): Promise<Canvas> => {
   const size = 32;
-  const canvas = createCanvas(size, size);
+  const canvas = new Canvas(size, size);
   const context = canvas.getContext('2d');
 
-  context.drawImage(image, 0, 0);
+  context.drawImage(polarity, 0, 0);
 
   context.globalCompositeOperation = 'source-in';
 
@@ -37,8 +49,8 @@ const drawPolarity = async (tier: string, polarity: string): Promise<Canvas> => 
   return canvas;
 };
 
-export const drawHeader = async (image: Image, tier: string): Promise<Image> => {
-  const canvas = createCanvas(image.width, image.height);
+export const tintImage = async (image: Image, tier: string): Promise<Canvas> => {
+  const canvas = new Canvas(image.width, image.height);
   const context = canvas.getContext('2d');
 
   context.drawImage(image, 0, 0);
@@ -60,7 +72,7 @@ export const drawHeader = async (image: Image, tier: string): Promise<Image> => 
 
   context.putImageData(new ImageData(data, image.width, image.height), 0, 0);
 
-  return loadImage(await canvas.encode('png'));
+  return canvas;
 };
 
 /**
@@ -68,8 +80,8 @@ export const drawHeader = async (image: Image, tier: string): Promise<Image> => 
  * @param image Image to darken
  * @returns
  */
-export const shadeImage = async (image: Image): Promise<Image> => {
-  const canvas = createCanvas(image.width, image.height);
+export const shadeImage = async (image: Image): Promise<Canvas> => {
+  const canvas = new Canvas(image.width, image.height);
   const context = canvas.getContext('2d');
 
   context.drawImage(image, 0, 0);
@@ -90,19 +102,8 @@ export const shadeImage = async (image: Image): Promise<Image> => {
 
   context.putImageData(new ImageData(data, image.width, image.height), 0, 0);
 
-  return loadImage(await canvas.encode('png'));
+  return canvas;
 };
-
-/**
- * Props used in creating the image of a backer
- */
-interface BackerImageProps {
-  backer: Image;
-  tier: string;
-  base: number;
-  polarity: string;
-  rank: number;
-}
 
 /**
  * Creates a backer image with polarity and drain.
@@ -111,12 +112,12 @@ interface BackerImageProps {
  * - `rank` starting in the negatives will add a `+` before the drain
  * - Universal polarities will default to `??`
  * - Vieled Riven mods will use their in-game behavior and use `???`
- * @param {BackerImageProps} props Props used when creating backer image
+ * @param {BackerInfo} props Props used when creating backer image
  * @returns {Promise<Image>}
  */
-export const backerImage = async (props: BackerImageProps): Promise<Canvas> => {
-  const { backer, tier, base, polarity, rank } = props;
-  const canvas = createCanvas(backer.width, backer.height);
+export const backerImage = async (props: BackerProperties): Promise<Canvas> => {
+  const { backer, tier, baseDrain, polarityName, polarity, rank } = props;
+  const canvas = new Canvas(backer.width, backer.height);
   const context = canvas.getContext('2d');
 
   context.drawImage(backer, 0, 0);
@@ -124,13 +125,13 @@ export const backerImage = async (props: BackerImageProps): Promise<Canvas> => {
   context.font = 'bold 14px "Roboto"';
   context.fillStyle = textColor(tier);
 
-  const drainHeight = canvas.height * 0.7;
+  const drainHeight = canvas.height * 0.55;
   if (tier === modRarityMap.riven) {
     context.fillText('???', canvas.width * 0.4, drainHeight);
     return canvas;
   }
 
-  if (polarity === 'universal') {
+  if (polarityName === 'universal') {
     // Rivens don't have a universal polarity. The polarity is just random and shows up after it gets unvieled
     context.fillText('??', canvas.width * 0.6, canvas.height * 0.7);
   } else {
@@ -138,229 +139,177 @@ export const backerImage = async (props: BackerImageProps): Promise<Canvas> => {
     context.drawImage(await drawPolarity(tier, polarity), canvas.width * 0.6, canvas.height * 0.2, 16, 16);
   }
 
-  const drain = `${base < 0 ? '+' : ''}${Math.abs(base) + rank}`;
+  const drain = `${baseDrain < 0 ? '+' : ''}${Math.abs(baseDrain) + (rank ?? 0)}`;
   if (drain.length >= 2) {
-    context.fillText(`${drain}`, canvas.width * 0.2, drainHeight);
+    drawText(context, `${drain}`, canvas.width * 0.2, drainHeight, tier, drainTextOptions);
   } else {
-    context.fillText(`${drain}`, canvas.width * 0.35, drainHeight);
+    drawText(context, `${drain}`, canvas.width * 0.4, drainHeight, tier, drainTextOptions);
   }
 
   return canvas;
 };
 
 /**
- * Props used in creating the lower tab
- */
-interface LowerTabProps {
-  lowerTab: Image;
-  tier: string;
-  compatName?: string;
-}
-
-/**
- * Creates a lower tab (the part that's positioned under the desciption with compat name)
- * @param {LowerTabProps} props Props used in creating the lower tab
+ * Creates a compatibility name tab
+ * @param {CompatTabProps} props Props used in creating the lower tab
  * @returns {Promise<Image>}
  */
-export const lowerTabImage = async (props: LowerTabProps): Promise<Canvas> => {
-  const { lowerTab, tier, compatName } = props;
-  const canvas = createCanvas(lowerTab.width, lowerTab.height);
+export const compatNameTab = async (props: CompatTabProps): Promise<Canvas> => {
+  const { tier, compat, compatTab } = props;
+  const canvas = new Canvas(compatTab.width, compatTab.height);
   const context = canvas.getContext('2d');
 
-  context.drawImage(lowerTab, 0, 0);
-
-  if (compatName) {
-    context.font = compatNameFont;
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillStyle = textColor(tier);
-
-    context.fillText(compatName.toUpperCase(), canvas.width * 0.5, canvas.height * 0.5);
-  }
+  context.drawImage(compatTab, 0, 0);
+  drawText(context, compat.toUpperCase(), canvas.width * 0.5, canvas.height * 0.55, tier, comatTextOptions);
 
   return canvas;
 };
-
-/**
- * Props used to create the background image
- */
-interface BackgroundProps {
-  background: Image;
-  sideLights: Image;
-  backer: Image;
-  lowerTab: Image;
-  bottom: { width: number; height: number };
-  mod: Mod;
-  rank: number;
-  setBonus?: number;
-  image?: string;
-}
 
 /**
  * Draws a mod background complete with thumbnail, text, and sidelights.
- * @param {BackerImageProps} backgroundProps Props used in create the background image
+ * @param {BackerInfo} backgroundProps Props used in create the background image
  * @returns {Promise<Image>}
  */
-export const backgroundImage = async (backgroundProps: BackgroundProps): Promise<Canvas> => {
-  const { background, sideLights, backer, lowerTab, bottom, mod, rank, image } = backgroundProps;
-  const setBonus = backgroundProps.setBonus ?? 0;
+export const drawBackground = async (backgroundProps: BackgroundProps): Promise<Canvas> => {
+  const { mod, rank, imagePath } = backgroundProps;
+  const { background, compatTab, frameBottom } = backgroundProps.assets;
+
+  let setBonus = backgroundProps.setBonus ?? 0;
   const tier = getTier(mod);
-  const canvas = createCanvas(background.width, background.height);
+  const canvas = new Canvas(background.width, background.height);
   const context = canvas.getContext('2d');
+  context.textRendering = 'geometricPrecision';
 
   context.drawImage(background, 0, 0);
 
   const maxWidth = background.width * 0.85;
   const description = modDescription(rank, mod.description, mod.levelStats);
-  const lines = description?.split('\n');
 
   const modSetProgressHeight = 12;
   let modSet: ModSet | undefined;
-  let modTextHeight = textHeight(context, maxWidth, mod.name, lines);
-
   if (mod.modSet) {
     modSet = find.findItem(mod.modSet) as ModSet;
-    modTextHeight =
-      modTextHeight + textHeight(context, maxWidth, undefined, modSet?.stats[0].split('\n')) + modSetProgressHeight;
+    setBonus = Math.min(setBonus, modSet.numUpgradesInSet - 1);
   }
+
+  const textHeight = modTextHeight(lineHeight, maxWidth, mod.name, description, modSet?.stats[setBonus]);
 
   // Track Y after image is drawn to know where to start drawing the text
   let position = canvas.height * 0.17;
-  if (mod.imageName || image) {
-    const thumb = await loadImage(image ?? `https://cdn.warframestat.us/img/${mod.imageName}`);
-    const thumbWidth = canvas.width - horizontalPad * 2;
-    const thumbHeight = thumb.height - modTextHeight;
+  if (imagePath || mod.imageName) {
+    const thumb = await loadImage(imagePath ?? `https://cdn.warframestat.us/img/${mod.imageName}`);
+    const thumbWidth = canvas.width - padding * 2;
+    const thumbHeight = thumb.height - textHeight;
 
-    context.drawImage(thumb, horizontalPad, position, thumbWidth, thumbHeight);
+    const ratio = Math.min(thumbWidth / thumb.width, thumbHeight / thumb.height);
+    const dw = thumbWidth;
+    const dh = thumb.height * ratio;
+    const dx = padding + (thumbWidth - dw) / 2;
+    const dy = position + (thumbHeight - dh) / 2;
 
+    context.imageSmoothingQuality = 'high';
+    context.drawImage(thumb, dx, dy, thumbWidth, thumbHeight);
+
+    // context.drawImage(thumb, 0, 0, thumbWidth, thumbHeight, horizontalPad, position, thumbWidth, thumbHeight);
     position += thumbHeight;
   }
 
-  const lineSpacing = 15;
-  context.fillStyle = textColor(tier);
-  context.textAlign = 'center';
-  context.textBaseline = 'middle';
-  context.font = titleFont;
-  context.fillText(mod.name, canvas.width * 0.5, position + horizontalPad * 2);
-
-  position += horizontalPad + lineSpacing;
-  if (description && description.length > 0) {
-    const x = canvas.width * 0.5;
-    context.font = descriptionFont;
-
-    let start = position + horizontalPad * 2;
-
-    lines?.forEach((line) => {
-      const texts = wrapText(context, line, maxWidth);
-      texts.forEach((text) => {
-        context.fillText(text, x, start, maxWidth);
-        start += lineSpacing;
-      });
-    });
-
-    if (modSet) {
-      const stats = Math.min(setBonus, modSet.stats.length - 1);
-      const modSetPosition = start - lineSpacing;
-      const segment = { width: canvas.width * 0.12, height: modSetProgressHeight };
-      context.strokeStyle = context.fillStyle;
-
-      let startPosition = canvas.width / modSet.stats.length;
-      for (let i = 0; i < modSet.stats.length; i++) {
-        // default to negative to imply disabled
-        const bonus = setBonus - 1;
-        if (bonus < i) {
-          context.strokeRect(startPosition, modSetPosition, segment.width, segment.height);
-        } else {
-          context.fillRect(startPosition, modSetPosition, segment.width, segment.height);
-        }
-
-        startPosition += segment.width - 1;
-      }
-
-      context.font = descriptionFont;
-      start = start + segment.height;
-      wrapText(context, modSet.stats[stats], maxWidth).forEach((text) => {
-        context.fillText(text, x, start, maxWidth);
-        start += lineSpacing;
-      });
-    }
+  position = drawText(context, mod.name, canvas.width * 0.5, position + padding * 2.5, tier, titleTextOptions).y;
+  if (description) {
+    position += padding; // Just a little padding between the name and description
+    position = drawText(context, description ?? '', canvas.width * 0.5, position, tier, descriptionTextOptions).y;
   }
 
-  const sideLightsY = background.height * 0.21;
-  const sideLightsLeft = await flip(sideLights);
+  if (modSet) {
+    const stats = Math.min(setBonus, modSet.stats.length - 1);
+    const y = position - padding * 2;
+    const segment = { width: canvas.width * 0.12, height: modSetProgressHeight };
+    const color = textColor(tier);
+    context.fillStyle = '#CA9A8766';
+    context.strokeStyle = color;
 
-  context.drawImage(sideLights, canvas.width * 0.93, sideLightsY);
-  context.drawImage(sideLightsLeft, 0, sideLightsY);
+    let x = canvas.width / modSet.stats.length;
+    for (let i = 0; i < modSet.stats.length; i++) {
+      // default to negative to imply disabled
+      const bonus = setBonus - 1;
+      if (bonus < i) {
+        context.strokeRect(x, y, segment.width, segment.height);
+      } else {
+        context.strokeRect(x, y, segment.width, segment.height);
+        context.fillRect(x, y, segment.width, segment.height);
+      }
 
-  context.drawImage(
-    await backerImage({
-      backer,
-      tier,
-      base: mod.baseDrain,
-      polarity: mod.polarity,
-      rank,
-    }),
-    background.width * 0.8,
-    background.height * 0.2
-  );
+      x += segment.width - 1;
+    }
 
-  // DE has this sitting right on top of the bottom piece but it bothers me
-  const padding = tier === modRarityMap.riven ? 16 : 8;
-  context.drawImage(
-    await lowerTabImage({ lowerTab, tier, compatName: mod.compatName }),
-    background.width * 0.09,
-    background.height - bottom.height - padding
-  );
+    position = y + segment.height + padding * 2;
+    position = drawText(context, modSet.stats[stats], canvas.width * 0.5, position, tier, descriptionTextOptions).y;
+  }
+
+  if (mod.compatName) {
+    // DE has this sitting right on top of the bottom piece but it bothers me
+    const padding = tier === modRarityMap.riven ? 16 : 8;
+    const assembledCompatTab = await compatNameTab({ compatTab, tier, compat: mod.compatName });
+    context.drawCanvas(assembledCompatTab, background.width * 0.09, background.height - frameBottom.height - padding);
+  }
+
+  return canvas;
+};
+
+export const drawTopFrame = async (props: TopFrameProps): Promise<Canvas> => {
+  const { frameTop, header, tier } = props;
+  const canvas = new Canvas(frameTop.width, frameTop.height);
+  const context = canvas.getContext('2d');
+
+  context.drawImage(frameTop, 0, 0);
+
+  if (header) {
+    const tintedHeader = await tintImage(header, tier);
+
+    context.drawImage(
+      tintedHeader,
+      frameTop.width * 0.3,
+      frameTop.height * 0.13,
+      header.width * 0.8,
+      header.height * 0.8
+    );
+  }
 
   return canvas;
 };
 
 /**
- * Props used to crete bottom image
- */
-interface BottomImageProps {
-  bottom: Image;
-  cornerLights: Image;
-  tier: string;
-  max: number;
-  rank?: number;
-}
-/**
  * Creates the lower frame piece of a mod with inactive/active rank slots up to the `max` rank
  *
  * - if no `rank` is given the default is inactive slots up to `max`
  * - if `rank` equals `max` a `RankCompleteLine` will be drawn across the slots
- * @param {BottomImageProps} props Props used in the creation of the lower frame
+ * @param {BottomFrameProps} props Props used in the creation of the lower frame
  * @returns {Promise<Image>}
  */
-export const bottomImage = async (props: BottomImageProps): Promise<Canvas> => {
-  const { bottom, cornerLights, tier, max, rank } = props;
+export const drawBottomFrame = async (tier: string, props: BottomFrameProps): Promise<Canvas> => {
+  const { max, rank } = props;
+  const { frameBottom, cornerLights, rankSlotEmpy, rankCompleted, rankSlotActive } = props.assets;
 
-  const rankSlotEmpy = await fetchModPiece('RankSlotEmpty.png');
-  const rankCompleted = await fetchModPiece('RankCompleteLine.png');
-  const rankSlotActive = await fetchModPiece('RankSlotActive.png');
-
-  const canvas = createCanvas(bottom.width, bottom.height);
+  const canvas = new Canvas(frameBottom.width, frameBottom.height);
   const context = canvas.getContext('2d');
 
-  context.drawImage(bottom, 0, 0);
+  context.drawImage(frameBottom, 0, 0);
 
-  const cornerLightsLeft = await flip(cornerLights);
   if (tier === modRarityMap.riven) {
     const cornerLightsHeight = canvas.height * 0.27;
 
-    context.drawImage(cornerLights, canvas.width * 0.73, cornerLightsHeight);
-    context.drawImage(cornerLightsLeft, canvas.width * 0.04, cornerLightsHeight);
+    context.drawImage(cornerLights.left, canvas.width * 0.04, cornerLightsHeight);
+    context.drawImage(cornerLights.right, canvas.width * 0.73, cornerLightsHeight);
   } else if (tier === modRarityMap.legendary) {
     const cornerLightsHeight = canvas.height * 0.32;
 
-    context.drawImage(cornerLights, canvas.width * 0.76, cornerLightsHeight);
-    context.drawImage(cornerLightsLeft, -(canvas.width * 0.01), cornerLightsHeight);
+    context.drawImage(cornerLights.left, -(canvas.width * 0.01), cornerLightsHeight);
+    context.drawImage(cornerLights.right, canvas.width * 0.76, cornerLightsHeight);
   } else {
     const cornerLightsHeight = canvas.height * 0.24;
 
-    context.drawImage(cornerLights, canvas.width * 0.76, cornerLightsHeight);
-    context.drawImage(cornerLightsLeft, -(canvas.width * 0.01), cornerLightsHeight);
+    context.drawImage(cornerLights.left, -(canvas.width * 0.01), cornerLightsHeight);
+    context.drawImage(cornerLights.right, canvas.width * 0.76, cornerLightsHeight);
   }
 
   const isRare = tier === modRarityMap.riven || tier === modRarityMap.legendary;
@@ -382,4 +331,88 @@ export const bottomImage = async (props: BottomImageProps): Promise<Canvas> => {
   }
 
   return canvas;
+};
+
+export const drawFrame = async (props: FrameProperties): Promise<Canvas> => {
+  const { width: backgroundWidth, height: backgroundHeight } = props.canvasProps.background;
+  const canvas = new Canvas(backgroundWidth, backgroundHeight);
+  const context = canvas.getContext('2d');
+
+  const assets = props.assets;
+  const backer = await backerImage({
+    baseDrain: props.baseDrain,
+    tier: props.tier,
+    polarityName: props.polarity,
+    polarity: props.assets.polarity,
+    backer: props.assets.backer,
+  });
+
+  const topFrame = await drawTopFrame({
+    frameTop: assets.frameTop,
+    tier: props.tier,
+  });
+
+  const lowerFrame = await drawBottomFrame(props.tier, {
+    assets,
+    rank: props.rank,
+    max: props.maxRank,
+  });
+
+  context.drawImage(backer, backgroundWidth * 0.8, backgroundHeight * 0.18);
+
+  const sideLightsY = backgroundHeight * 0.21;
+  context.drawImage(assets.sideLights.left, 0, sideLightsY);
+  context.drawImage(assets.sideLights.right, canvas.width * 0.93, sideLightsY);
+
+  const topOfBackground = backgroundHeight * 0.14;
+  if (topFrame.width > backgroundWidth) {
+    const widthDiff = topFrame.width - backgroundWidth;
+    context.drawImage(topFrame, -widthDiff / 2, topOfBackground);
+  } else {
+    context.drawImage(topFrame, props.canvasProps.centerX, topOfBackground);
+  }
+
+  if (lowerFrame.width > backgroundWidth) {
+    const widthDiff = lowerFrame.width - backgroundWidth;
+    context.drawImage(lowerFrame, -widthDiff / 2, backgroundHeight * 0.65);
+  } else {
+    context.drawImage(lowerFrame, props.canvasProps.centerX, backgroundHeight * 0.65);
+  }
+
+  return canvas;
+};
+
+export const drawText = (
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  tier: string,
+  textOptions: TextOptions
+): { x: number; y: number } => {
+  const { width, height } = ctx.canvas;
+  const { scale, fontWeight, size } = textOptions;
+  const hi = new Canvas(width * scale, height * scale);
+  const h = hi.getContext('2d');
+  h.font = `${fontWeight} ${size * scale}px ${defaultFontFamily}`;
+  h.fillStyle = textColor(tier);
+  h.textAlign = 'center';
+  h.textBaseline = 'middle';
+  h.shadowBlur = 25;
+  h.shadowOffsetX = 12;
+  h.shadowOffsetY = 12;
+  h.shadowColor = 'black';
+  h.textWrap = true;
+
+  // wrapText expects unscaled units and applies `scale` itself
+  const maxWidth = hi.width * 0.85;
+  const lines = wrapText(text, textOptions, maxWidth);
+
+  lines.forEach((line, i) => {
+    h.fillText(line, x * scale, (y + i * lineHeight) * scale);
+  });
+
+  ctx.drawCanvas(hi, 0, 0, width, height);
+
+  return { x, y: y + lines.length * lineHeight };
 };

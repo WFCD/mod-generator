@@ -22,9 +22,9 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@fontsource-variable/roboto": "^5.2.10",
-    "@napi-rs/canvas": "^1.0.0",
-    "@wfcd/items": "^1.1276.43"
+    "@fontsource-variable/roboto": "^5.3.0",
+    "@wfcd/items": "^1.1276.51",
+    "skia-canvas": "^4.0.1"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.8",
