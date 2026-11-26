@@ -126,7 +126,7 @@ export const registerFonts = () => {
     require.resolve('@fontsource-variable/roboto'),
     '../../files/roboto-latin-standard-normal.woff2'
   );
-  if (!FontLibrary.has(nameAlies)) FontLibrary.use(fontPath, nameAlies);
+  if (!FontLibrary.has(nameAlies)) FontLibrary.use(nameAlies, fontPath);
 };
 
 export const modTextHeight = (
