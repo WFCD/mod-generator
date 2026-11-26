@@ -62,7 +62,7 @@ export interface FrameProperties {
  */
 export interface BackerProperties {
   baseDrain: number;
-  rank?: number;
+  rank: number;
   tier: string;
   polarityName: string;
   polarity: Image;

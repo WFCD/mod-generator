@@ -140,7 +140,7 @@ export const backerImage = async (props: BackerProperties): Promise<Canvas> => {
     context.drawImage(await drawPolarity(tier, polarity), canvas.width * 0.6, canvas.height * 0.2, 16, 16);
   }
 
-  const drain = `${baseDrain < 0 ? '+' : ''}${Math.abs(baseDrain) + (rank ?? 0)}`;
+  const drain = `${baseDrain < 0 ? '+' : ''}${Math.abs(baseDrain) + rank}`;
   if (drain.length >= 2) {
     drawText(context, `${drain}`, x, y, tier, drainTextOptions);
   } else {
@@ -346,6 +346,7 @@ export const drawFrame = async (props: FrameProperties): Promise<Canvas> => {
     polarityName: props.polarity,
     polarity: props.assets.polarity,
     backer: props.assets.backer,
+    rank: props.rank,
   });
 
   const topFrame = await drawTopFrame({
