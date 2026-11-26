@@ -19,6 +19,7 @@ describe('Generate a mod', () => {
       '/Lotus/Upgrades/Mods/Warframe/Expert/AvatarPowerMaxModExpert',
       '/Lotus/Upgrades/Mods/Sets/Augur/WarframeAugurMessageMod',
       '/Lotus/Upgrades/Mods/DualSource/Rifle/ArgonakDaggerMod',
+      '/Lotus/Upgrades/Mods/Aura/PlayerMeleeAuraMod',
     ];
 
     const testPath = join('.', 'assets', 'tests');

@@ -64,7 +64,7 @@ export const modTypes: { [key: string]: ModAssetNames } = {
     frameBottom: 'SilverFrameBottom',
     compatTab: 'SilverLowerTab',
     sideLights: 'SilverSideLight',
-    cornerLights: 'SIlverCornerLights',
+    cornerLights: 'SilverCornerLights',
   },
   gold: {
     background: 'GoldBackground',

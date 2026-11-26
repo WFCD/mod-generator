@@ -125,9 +125,10 @@ export const backerImage = async (props: BackerProperties): Promise<Canvas> => {
   context.font = 'bold 14px "Roboto"';
   context.fillStyle = textColor(tier);
 
-  const drainHeight = canvas.height * 0.55;
+  const x = canvas.width * 0.4;
+  const y = canvas.height * 0.55;
   if (tier === modRarityMap.riven) {
-    context.fillText('???', canvas.width * 0.4, drainHeight);
+    context.fillText('???', x, y);
     return canvas;
   }
 
@@ -141,9 +142,9 @@ export const backerImage = async (props: BackerProperties): Promise<Canvas> => {
 
   const drain = `${baseDrain < 0 ? '+' : ''}${Math.abs(baseDrain) + (rank ?? 0)}`;
   if (drain.length >= 2) {
-    drawText(context, `${drain}`, canvas.width * 0.2, drainHeight, tier, drainTextOptions);
+    drawText(context, `${drain}`, x, y, tier, drainTextOptions);
   } else {
-    drawText(context, `${drain}`, canvas.width * 0.4, drainHeight, tier, drainTextOptions);
+    drawText(context, `${drain}`, x, y, tier, drainTextOptions);
   }
 
   return canvas;
