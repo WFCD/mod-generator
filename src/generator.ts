@@ -10,7 +10,7 @@ export const generateCollapsed = async (options: GenerateModProps): Promise<Buff
 
   const { mod, output, imagePath } = options;
   const tier = utils.getTier(mod);
-  const rank = options.rank ?? mod.fusionLimit;
+  const rank = Math.min(options.rank ?? mod.fusionLimit, mod.fusionLimit, 10);
   const isRiven = tier === modRarityMap.riven;
 
   const canvas = new Canvas(isRiven ? 292 : 256, 256);
