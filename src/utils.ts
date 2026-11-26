@@ -122,10 +122,7 @@ export const textHeight = (text: string, maxWidth: number, textOptions: TextOpti
 export const registerFonts = () => {
   const nameAlies = 'Roboto';
   const require = createRequire(import.meta.url);
-  const fontPath = join(
-    require.resolve('@fontsource-variable/roboto'),
-    '../../files/roboto-latin-standard-normal.woff2'
-  );
+  const fontPath = join(require.resolve('@fontsource-variable/roboto'), '../../files/roboto-latin-wght-normal.woff2');
   if (!FontLibrary.has(nameAlies)) FontLibrary.use(nameAlies, fontPath);
 };
 
