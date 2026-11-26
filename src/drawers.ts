@@ -188,12 +188,14 @@ export const drawBackground = async (backgroundProps: BackgroundProps): Promise<
 
   const modSetProgressHeight = 12;
   let modSet: ModSet | undefined;
+  let bonusStat: string | undefined;
   if (mod.modSet) {
     modSet = find.findItem(mod.modSet) as ModSet;
-    setBonus = Math.min(setBonus, modSet.numUpgradesInSet - 1);
+    setBonus = Math.min(setBonus, modSet.numUpgradesInSet);
+    bonusStat = modSet.stats[setBonus - 1];
   }
 
-  const textHeight = modTextHeight(lineHeight, maxWidth, mod.name, description, modSet?.stats[setBonus]);
+  const textHeight = modTextHeight(lineHeight, maxWidth, mod.name, description, bonusStat);
 
   // Track Y after image is drawn to know where to start drawing the text
   let position = canvas.height * 0.17;
@@ -221,8 +223,7 @@ export const drawBackground = async (backgroundProps: BackgroundProps): Promise<
     position = drawText(context, description ?? '', canvas.width * 0.5, position, tier, descriptionTextOptions).y;
   }
 
-  if (modSet) {
-    const stats = Math.min(setBonus, modSet.stats.length - 1);
+  if (modSet && bonusStat) {
     const y = position - padding * 2;
     const segment = { width: canvas.width * 0.12, height: modSetProgressHeight };
     const color = textColor(tier);
@@ -244,7 +245,7 @@ export const drawBackground = async (backgroundProps: BackgroundProps): Promise<
     }
 
     position = y + segment.height + padding * 2;
-    position = drawText(context, modSet.stats[stats], canvas.width * 0.5, position, tier, descriptionTextOptions).y;
+    position = drawText(context, bonusStat, canvas.width * 0.5, position, tier, descriptionTextOptions).y;
   }
 
   if (mod.compatName) {
