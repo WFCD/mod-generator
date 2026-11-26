@@ -224,7 +224,7 @@ export const drawBackground = async (backgroundProps: BackgroundProps): Promise<
   }
 
   if (modSet && bonusStat) {
-    const y = position - padding * 2;
+    const y = position - padding * 2.5;
     const segment = { width: canvas.width * 0.12, height: modSetProgressHeight };
     const color = textColor(tier);
     context.fillStyle = '#CA9A8766';
@@ -244,7 +244,7 @@ export const drawBackground = async (backgroundProps: BackgroundProps): Promise<
       x += segment.width - 1;
     }
 
-    position = y + segment.height + padding * 2;
+    position = y + segment.height + padding + 2; // The 2 is just a visual thing
     position = drawText(context, bonusStat, canvas.width * 0.5, position, tier, descriptionTextOptions).y;
   }
 
@@ -268,13 +268,7 @@ export const drawTopFrame = async (props: TopFrameProps): Promise<Canvas> => {
   if (header) {
     const tintedHeader = await tintImage(header, tier);
 
-    context.drawImage(
-      tintedHeader,
-      frameTop.width * 0.3,
-      frameTop.height * 0.13,
-      header.width * 0.8,
-      header.height * 0.8
-    );
+    context.drawImage(tintedHeader, frameTop.width * 0.3, 0, header.width * 0.8, header.height * 0.8);
   }
 
   return canvas;
@@ -353,6 +347,7 @@ export const drawFrame = async (props: FrameProperties): Promise<Canvas> => {
   const topFrame = await drawTopFrame({
     frameTop: assets.frameTop,
     tier: props.tier,
+    header: assets.header,
   });
 
   const lowerFrame = await drawBottomFrame(props.tier, {

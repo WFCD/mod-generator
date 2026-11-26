@@ -45,7 +45,24 @@ export const tierColor: UniquenameType = {
   Omega: '#AC83D5',
 };
 
-export const modHeaders: UniquenameType = {};
+export const modHeaders: UniquenameType = {
+  ashen: 'AshenHeader',
+  augur: 'AugurHeader',
+  bone: 'BoneHeader',
+  femur: 'FemurHeader',
+  gladiator: 'GladiatorHeader',
+  hawk: 'HawkHeader',
+  hunter: 'HunterHeader',
+  mecha: 'MechaHeader',
+  raptor: 'RaptorHeader',
+  spider: 'SpiderHeader',
+  strain: 'StrainHeader',
+  synth: 'SynthHeader',
+  tek: 'TekHeader',
+  umbra: 'UmbraHeader',
+  sacrifice: 'UmbraHeader',
+  vigilante: 'VigilanteHeader',
+};
 
 export const modTypes: { [key: string]: ModAssetNames } = {
   bronze: {

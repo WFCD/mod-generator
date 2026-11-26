@@ -10,6 +10,7 @@ import { Canvas, FontLibrary, type Image, loadImage } from 'skia-canvas';
 import {
   defaultFontFamily,
   descriptionTextOptions,
+  modHeaders,
   modRarityMap,
   modSetProgressHeight,
   modTypes,
@@ -47,7 +48,7 @@ export const fetchModPiece = async (name: string) => {
 };
 
 export const fetchModAssets = async (tier: string, polarity: string, modSet?: string): Promise<ModAssets> => {
-  const header = modSet?.split('/').reverse()[1]; // i.e /Lotus/Upgrades/Mods/Sets/Strain/StrainSetMod = Strain
+  const header = modSet?.split('/').reverse()[1].toLowerCase(); // i.e /Lotus/Upgrades/Mods/Sets/Strain/StrainSetMod = Strain
   const assets = modTypes[tier.toLowerCase()];
 
   const filePath = join(assetPath, 'polarities', `${polarity}.png`);
@@ -64,7 +65,7 @@ export const fetchModAssets = async (tier: string, polarity: string, modSet?: st
     cornerLights: { left: await flip(cornerLight), right: cornerLight },
     sideLights: { left: await flip(sideLight), right: sideLight },
     compatTab: await fetchModPiece(`${assets.compatTab}.png`),
-    header: header ? await fetchModPiece(`${header}Header.png`) : undefined,
+    header: header && modHeaders[header] ? await fetchModPiece(`${modHeaders[header]}.png`) : undefined,
     polarity: await loadImage(image),
     rankSlotEmpy: await fetchModPiece('RankSlotEmpty.png'),
     rankCompleted: await fetchModPiece('RankCompleteLine.png'),
