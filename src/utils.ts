@@ -123,7 +123,7 @@ export const registerFonts = () => {
   const nameAlies = 'Roboto';
   const require = createRequire(import.meta.url);
   const fontPath = join(require.resolve('@fontsource-variable/roboto'), '../files/roboto-latin-wght-normal.woff2');
-  if (FontLibrary.has(nameAlies)) FontLibrary.use(nameAlies, fontPath);
+  if (!FontLibrary.has(nameAlies)) FontLibrary.use(nameAlies, fontPath);
 };
 
 export const modTextHeight = (
