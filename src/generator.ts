@@ -1,98 +1,58 @@
-import { createCanvas, loadImage } from '@napi-rs/canvas';
-import type { Mod } from '@wfcd/items';
+import { Canvas, loadImage } from 'skia-canvas';
 
-import { backgroundImage, bottomImage, drawHeader, horizontalPad, shadeImage } from './drawers';
-import { modRarityMap, titleFont } from './styling';
-import {
-  type CanvasOutput,
-  exportCanvas,
-  fetchHeader,
-  getBackground,
-  getFrame,
-  getTier,
-  registerFonts,
-  textColor,
-} from './utils';
+import { drawBackground, drawBottomFrame, drawFrame, drawText, padding, shadeImage, tintImage } from './drawers';
+import { modRarityMap, titleTextOptions } from './styling';
+import type { GenerateModProps } from './types';
+import * as utils from './utils';
 
-export interface GenerateModProps {
-  mod: Mod;
-  rank?: number;
-  setBonus?: number;
-  image?: string;
-  output?: CanvasOutput;
-}
+export const generateCollapsed = async (options: GenerateModProps): Promise<Buffer<ArrayBufferLike>> => {
+  utils.registerFonts();
 
-export const generateCollapsed = async (config: GenerateModProps): Promise<Buffer<ArrayBufferLike>> => {
-  registerFonts();
-
-  const { mod, output, image } = config;
-  const tier = getTier(mod);
-  const rank = Math.min(config.rank ?? mod.fusionLimit, mod.fusionLimit, 10);
+  const { mod, output, imagePath } = options;
+  const tier = utils.getTier(mod);
+  const rank = Math.min(options.rank ?? mod.fusionLimit, mod.fusionLimit, 10);
   const isRiven = tier === modRarityMap.riven;
 
-  const canvas = createCanvas(isRiven ? 292 : 256, 256);
+  const canvas = new Canvas(isRiven ? 292 : 256, 256);
   const context = canvas.getContext('2d');
 
-  const { cornerLights, bottom, top } = await getFrame(tier);
+  const assets = await utils.fetchModAssets(tier, mod.polarity, mod.modSet);
+  const { header, frameTop, frameBottom } = assets;
 
-  if (mod.imageName || image) {
-    const thumb = await loadImage(image ?? `https://cdn.warframestat.us/img/${mod.imageName}`);
-    const thumbWidth = canvas.width - horizontalPad * 2;
-    const thumbHeight = top.height / 2 + bottom.height / 2;
+  if (imagePath || mod.imageName) {
+    const thumb = await loadImage(imagePath ?? `https://cdn.warframestat.us/img/${mod.imageName}`);
+    const thumbWidth = canvas.width - padding * 2;
+    const thumbHeight = frameTop.height / 2 + frameBottom.height / 2;
     const shadedImage = await shadeImage(thumb);
 
-    context.drawImage(shadedImage, top.width * 0.03, top.height * 0.3, thumbWidth, thumbHeight);
+    context.drawImage(shadedImage, frameTop.width * 0.03, frameTop.height * 0.3, thumbWidth, thumbHeight);
   }
 
-  context.fillStyle = textColor(tier);
-  context.textAlign = 'center';
-  context.textBaseline = 'middle';
-  context.font = titleFont;
-  context.fillText(mod.name, canvas.width * 0.5, top.height);
+  drawText(context, mod.name, canvas.width * 0.5, frameBottom.height * 0.65, tier, titleTextOptions);
+  context.drawImage(frameTop, 0, 0);
 
-  context.drawImage(top, 0, 0);
-
-  if (mod.modSet) {
-    const header = await fetchHeader(mod.modSet);
-    context.drawImage(await drawHeader(header, tier), top.width * 0.35, 0, header.width * 0.6, header.height * 0.6);
+  if (header) {
+    const tintedHeader = await tintImage(header, tier);
+    context.drawImage(tintedHeader, frameTop.width * 0.35, 0, header.width * 0.6, header.height * 0.6);
   }
 
-  const positionY = top.height * 0.5;
-  if (bottom.width > canvas.width) {
-    const newXPadding = horizontalPad * 5;
-    const widthDiff = bottom.width - canvas.width - newXPadding;
+  const assembledLowerFrame = await drawBottomFrame(tier, {
+    assets,
+    max: mod.fusionLimit,
+    rank,
+  });
 
-    context.drawImage(
-      await bottomImage({
-        bottom,
-        cornerLights,
-        tier,
-        max: mod.fusionLimit,
-        rank,
-      }),
-      -widthDiff / 2,
-      positionY
-    );
+  const positionY = frameTop.height * 0.5;
+  if (frameBottom.width > canvas.width) {
+    const newXPadding = padding * 5;
+    const widthDiff = frameBottom.width - canvas.width - newXPadding;
+    context.drawImage(assembledLowerFrame, -widthDiff / 2, positionY);
   } else {
-    context.drawImage(
-      await bottomImage({
-        bottom,
-        cornerLights,
-        tier,
-        max: mod.fusionLimit,
-        rank,
-      }),
-      0,
-      positionY
-    );
+    context.drawImage(assembledLowerFrame, 0, positionY);
   }
 
-  const outterCanvas = createCanvas(isRiven ? 292 : 256, isRiven ? 180 : 150);
-  const outterContext = outterCanvas.getContext('2d');
-
-  outterContext.drawImage(canvas, 0, 0);
-
-  return await exportCanvas(outterCanvas, output ?? { format: 'png' });
+  const trimmed = utils.trimCanvas(canvas, 10);
+  return trimmed.toBufferSync(output ?? 'png');
 };
 
 /**
@@ -114,93 +74,49 @@ export const generateCollapsed = async (config: GenerateModProps): Promise<Buffe
  * @returns {Promise<Buffer<ArrayBufferLike>>}
  */
 const generate = async (options: GenerateModProps): Promise<Buffer<ArrayBufferLike>> => {
-  registerFonts();
+  utils.registerFonts();
 
   // All values here should be percentages based on the background size and NOT on the canvas size.
   // The reason for this is that special mod pieces have a bigger width then the base 256 width of the background,
   // so the canvas has to be big enough to keep those parts in view.
-  const { mod, output, setBonus, image } = options;
+  const { mod, output, setBonus, imagePath } = options;
   const rank = Math.min(options.rank ?? mod.fusionLimit, mod.fusionLimit, 10);
-  const tier = getTier(mod);
-  const isRiven = tier === modRarityMap.riven;
+  const tier = utils.getTier(mod);
 
-  const canvas = createCanvas(isRiven ? 292 : 256, 512);
+  const assets = await utils.fetchModAssets(utils.getTier(mod), mod.polarity, mod.modSet);
+
+  const width = Math.max(assets.background.width, assets.frameTop.width, assets.frameBottom.width);
+  const canvas = new Canvas(width, assets.background.height);
   const context = canvas.getContext('2d');
 
-  const { background, backer, lowerTab } = await getBackground(tier);
-  const { cornerLights, bottom, top, sideLights } = await getFrame(tier);
+  const modCanvasProps = utils.calCanvasProps(
+    { width: canvas.width, height: canvas.height },
+    { width: assets.background.width, height: assets.background.height }
+  );
 
-  const centerX = (canvas.width - background.width) / 2;
-  const centerY = (canvas.height - background.height) / 2;
+  const assembledBackground = await drawBackground({ mod, assets, rank, setBonus, imagePath });
+  context.drawCanvas(assembledBackground, modCanvasProps.centerX, modCanvasProps.centerY);
 
-  const backgroundGen = await backgroundImage({
-    background,
-    sideLights,
-    backer,
-    lowerTab,
-    bottom: { width: bottom.width, height: bottom.height },
-    mod,
-    rank,
-    setBonus,
-    image,
+  const frame = await drawFrame({
+    baseDrain: mod.baseDrain,
+    rank: rank,
+    tier,
+    polarity: mod.polarity,
+    maxRank: mod.fusionLimit,
+    canvasProps: modCanvasProps,
+    assets,
   });
-  context.drawImage(backgroundGen, centerX, centerY);
 
-  const topFrameHeight = background.height * 0.14;
-  if (top.width > background.width) {
-    const newXPadding = horizontalPad * 6;
-    const widthDiff = top.width - background.width - newXPadding;
-    context.drawImage(top, -widthDiff / 2, topFrameHeight);
+  if (frame.width > modCanvasProps.background.width) {
+    const newXPadding = padding * 6;
+    const widthDiff = frame.width - modCanvasProps.background.width - newXPadding;
+    context.drawCanvas(frame, -widthDiff / 2, 0);
   } else {
-    context.drawImage(top, centerX, topFrameHeight);
+    context.drawCanvas(frame, modCanvasProps.centerX, 0);
   }
 
-  if (mod.modSet) {
-    const header = await fetchHeader(mod.modSet);
-
-    context.drawImage(
-      await drawHeader(header, tier),
-      background.width * 0.3,
-      background.height * 0.13,
-      header.width * 0.8,
-      header.height * 0.8
-    );
-  }
-
-  if (bottom.width > background.width) {
-    const newXPadding = horizontalPad * 5;
-    const widthDiff = bottom.width - background.width - newXPadding;
-    context.drawImage(
-      await bottomImage({
-        bottom,
-        cornerLights,
-        tier,
-        max: mod.fusionLimit,
-        rank,
-      }),
-      -widthDiff / 2,
-      background.height * 0.65
-    );
-  } else {
-    context.drawImage(
-      await bottomImage({
-        bottom,
-        cornerLights,
-        tier,
-        max: mod.fusionLimit,
-        rank,
-      }),
-      centerX,
-      background.height * 0.65
-    );
-  }
-
-  const outterCanvas = createCanvas(isRiven ? 292 : 256, 380);
-  const outterContext = outterCanvas.getContext('2d');
-
-  outterContext.drawImage(canvas, (outterCanvas.width - canvas.width) / 2, (outterCanvas.height - canvas.height) / 2);
-
-  return await exportCanvas(outterCanvas, output ?? { format: 'png' });
+  const trimmed = utils.trimCanvas(canvas, 10);
+  return trimmed.toBufferSync(output ?? 'png');
 };
 
 export default generate;
