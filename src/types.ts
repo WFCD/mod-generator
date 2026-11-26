@@ -91,7 +91,7 @@ export interface BackgroundProps {
   mod: Mod;
   assets: ModAssets;
   imagePath?: string;
-  rank?: number;
+  rank: number;
   setBonus?: number;
 }
 
