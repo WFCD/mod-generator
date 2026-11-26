@@ -175,7 +175,7 @@ export const drawBackground = async (backgroundProps: BackgroundProps): Promise<
   const { mod, rank, imagePath } = backgroundProps;
   const { background, compatTab, frameBottom } = backgroundProps.assets;
 
-  let setBonus = backgroundProps.setBonus ?? 0;
+  let setBonus = backgroundProps.setBonus ?? 1;
   const tier = getTier(mod);
   const canvas = new Canvas(background.width, background.height);
   const context = canvas.getContext('2d');
