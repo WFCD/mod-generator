@@ -27,7 +27,7 @@
     "skia-canvas": "^4.0.1"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.6.8",
+    "@biomejs/biome": "2.6.9",
     "@commitlint/cli": "^21.0.0",
     "@commitlint/config-conventional": "^21.0.0",
     "@commitlint/types": "^21.0.0",
